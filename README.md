@@ -3,4 +3,5 @@ Orange-pig's blog station.
 Now, this is a test page.
 
 # Net Guide
-http://www.test.com
+Test URL http://www.test.com/
+GitHub Pages https://pages.github.com/
