@@ -1,0 +1,70 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>CamarePage</title>
+
+    <link href="/Content/bootstrap.css" rel="stylesheet"/>
+    <link href="/Content/site.css" rel="stylesheet"/>
+    <script src="/Scripts/modernizr-2.6.2.js"></script>
+    <script src="/Scripts/jquery-1.10.2.js"></script>
+</head>
+<body>
+	<div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">HTML5Demo</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/">注册</a></li>
+                    <li><a href="/Home/About">认证</a></li>
+                    <li><a href="/Home/Contact">联系方式</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+    	<h1>I am Camare page!</h1>
+		<button id="snapshot" type="button" class="btn btn-primary">SnapShot 拍照</button>
+		<div class="row">
+	        <video id="video" width="320" height="240"></video>
+	        <canvas id="canvas" width="320" height="240"></canvas>
+	    </div>	
+    </div>
+</body>
+<hr />
+<footer>
+	<div class="container">
+		<h1>
+			URL Guide
+		</h1>
+		<p>
+			- View my bolg <a href="http://orange-pig.github.io/">http://orange-pig.github.io/</a> <br />
+			- GitHub Pages <a href="https://pages.github.com/">https://pages.github.com/</a> <br />
+			- How to use jekyll <a href="https://help.github.com/articles/using-jekyll-with-pages/">https://help.github.com/articles/using-jekyll-with-pages/</a> <br />
+			- A tutorials of markdown <a href="http://wowubuntu.com/markdown/">http://wowubuntu.com/markdown/</a> <br />
+		</p>
+	</div>
+	
+</footer>
+</html>
+<script src="/Scripts/camare.js"></script>
+<script type="text/javascript">
+	var video = $("#video")[0];
+    var canvas = $("#canvas")[0];
+    var conetext = canvas.getContext("2d");
+
+    camera(video);
+
+    $("#snapshot").click(function(){
+    	conetext.drawImage(video, 0, 0, 320, 240);
+    })
+</script>
