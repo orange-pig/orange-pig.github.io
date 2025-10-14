@@ -1,0 +1,563 @@
+<!doctype html><html lang=zh-CN x-data :class=$store.darkMode.class() :data-theme=$store.darkMode.theme()><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Flutter in Windows Desktop 工程实践 | 若烟阁</title><link rel=canonical href=https://orange-pig.github.io/blog/posts/coding/flutter-in-windows-desktop-%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/><meta name=author content="鱼人小野"><meta name=description content="本文是关于Flutter在Windows桌面端工程实践的经验汇总，包括单进程应用、托盘化、命令行参数、设置exe文件应用信息、打包依赖库、条件编译、使用命令行工具、日志、FFI用法、数据安全等方面。
+"><meta name=keywords content="Flutter,Windows,Desktop"><meta name=generator content="Hugo 0.151.0"><meta property="og:url" content="https://orange-pig.github.io/blog/posts/coding/flutter-in-windows-desktop-%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/"><meta property="og:site_name" content="若烟阁"><meta property="og:title" content="Flutter in Windows Desktop 工程实践"><meta property="og:description" content="本文是关于Flutter在Windows桌面端工程实践的经验汇总，包括单进程应用、托盘化、命令行参数、设置exe文件应用信息、打包依赖库、条件编译、使用命令行工具、日志、FFI用法、数据安全等方面。"><meta property="og:locale" content="zh_CN"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2025-10-14T16:48:07+08:00"><meta property="article:modified_time" content="2025-10-14T16:48:07+08:00"><meta property="article:tag" content="Flutter"><meta property="article:tag" content="Windows"><meta property="article:tag" content="Desktop"><meta name=twitter:card content="summary"><meta name=twitter:title content="Flutter in Windows Desktop 工程实践"><meta name=twitter:description content="本文是关于Flutter在Windows桌面端工程实践的经验汇总，包括单进程应用、托盘化、命令行参数、设置exe文件应用信息、打包依赖库、条件编译、使用命令行工具、日志、FFI用法、数据安全等方面。"><link rel=stylesheet href=/blog/css/output.min.css><style>pre{padding:1em;overflow:auto}</style><script defer src=https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js integrity="sha256-4EHxtjnR5rL8JzbY12OKQJr81ESm7JBEb49ORPo29AY=" crossorigin=anonymous></script></head><body x-data="{
+    flip: false,
+  }"><div id=dream-global-bg></div><nav class="mt-4 lg:mt-8 py-4"><div class="container flex justify-between px-4"><section class="flex items-center gap-4"><div class="avatar cursor-pointer hover:avatar-online" @click="flip = !flip" title=翻转一下！><div class="h-10 rounded-full"><img src=/blog/ alt=若烟阁></div></div><div><a href=https://orange-pig.github.io/blog/ class="text-lg font-semibold cursor-pointer">若烟阁</a><div class="text-base-content/60 text-sm">记录编程、技术、生活点滴</div></div></section><div class="dropdown dropdown-end sm:hidden"><div tabindex=0 role=button class="btn btn-ghost btn-square" aria-label="Select an option"><ion-icon name=menu class=text-2xl></ion-icon></div><ul tabindex=0 class="dropdown-content menu w-36 bg-base-100 rounded-box z-1 shadow-md"><li><div role=link tabindex=0 class="inline-flex items-center p-2 cursor-pointer" @click="flip = !flip" title=关于><ion-icon name=information-circle></ion-icon>关于</div></li><li><a class="inline-flex items-center p-2 cursor-pointer" href=/blog/posts title=归档><ion-icon name=archive></ion-icon>归档</a></li><li><a class="inline-flex items-center p-2 cursor-pointer" href=/blog/categories title=所有分类><ion-icon name=grid></ion-icon>所有分类</a></li><li><a class="inline-flex items-center p-2 cursor-pointer" href=/blog/tags title=所有标签><ion-icon name=pricetags></ion-icon>所有标签</a></li></ul></div><section class="hidden sm:flex sm:items-center sm:gap-2 md:gap-4"><div role=link tabindex=0 class="text-sm font-semibold cursor-pointer hover:underline" @click="flip = !flip" title=关于>关于</div><a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href=/blog/posts title=归档><ion-icon class=group-hover:text-primary-content name=archive></ion-icon></a><a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href=/blog/categories title=所有分类><ion-icon class=group-hover:text-primary-content name=grid></ion-icon></a><a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href=/blog/tags title=所有标签><ion-icon class=group-hover:text-primary-content name=pricetags></ion-icon></a></section></div></nav><div class=flip-container :class="{ 'flip-it': flip }"><div class=flipper><div class=front><div class=container><div class="lg:grid lg:grid-cols-4 gap-4 mt-4 px-4"><div class="hidden lg:block"></div><div class=lg:col-span-2><article class="mx-auto prose prose-quoteless dark:prose-invert" id=dream-single-post-main itemscope itemtype=http://schema.org/Article><meta itemprop=name content="Flutter in Windows Desktop 工程实践"><meta itemprop=description content="本文是关于Flutter在Windows桌面端工程实践的经验汇总，包括单进程应用、托盘化、命令行参数、设置exe文件应用信息、打包依赖库、条件编译、使用命令行工具、日志、FFI用法、数据安全等方面。"><meta itemprop=datePublished content="2025-10-14T16:48:07+08:00"><meta itemprop=dateModified content="2025-10-14T16:48:07+08:00"><meta itemprop=wordCount content="1613"><meta itemprop=keywords content="Flutter,Windows,Desktop"><header><h1 itemprop=headline>Flutter in Windows Desktop 工程实践</h1><p class=text-sm>星期二, 10月 14, 2025
+| <span>8分钟阅读</span>
+| <span>更新于
+星期二, 10月 14, 2025</span></p><div class="flex justify-between"><div class="flex items-center"><span>@</span>
+<span itemprop=author itemscope itemtype=https://schema.org/Person><span itemprop=name>鱼人小野</span></span></div><div class="flex items-center gap-2"><a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href="https://x.com/intent/post?text=Flutter%20in%20Windows%20Desktop%20%e5%b7%a5%e7%a8%8b%e5%ae%9e%e8%b7%b5&amp;url=https://orange-pig.github.io/blog/posts/coding/flutter-in-windows-desktop-%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/" target=_blank rel="noopener noreferrer" title="Share on X"><ion-icon class=group-hover:text-primary-content name=logo-x></ion-icon></a><a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href="https://facebook.com/sharer/sharer.php?u=https://orange-pig.github.io/blog/posts/coding/flutter-in-windows-desktop-%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/" target=_blank rel="noopener noreferrer" title="Share on Facebook"><ion-icon class=group-hover:text-primary-content name=logo-facebook></ion-icon></a><a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href="https://wa.me/?text=Flutter%20in%20Windows%20Desktop%20%e5%b7%a5%e7%a8%8b%e5%ae%9e%e8%b7%b5%20https://orange-pig.github.io/blog/posts/coding/flutter-in-windows-desktop-%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/" target=_blank rel="noopener noreferrer" title="Share on WhatsApp"><ion-icon class=group-hover:text-primary-content name=logo-whatsapp></ion-icon></a></div></div></header><section id=dream-single-post-content itemprop=articleBody><p>本文是关于Flutter在Windows桌面端工程实践的经验汇总，包括单进程应用、托盘化、命令行参数、设置exe文件应用信息、打包依赖库、条件编译、使用命令行工具、日志、FFI用法、数据安全等方面。</p><p>Flutter虽然在Windows桌面端发力，也发布了正式版。但是，其开发重心仍然在移动端上。和其他成熟的桌面端框架比起来，Flutter还像个小孩子，从设计理念和环境生态很多地方都还是一个小学僧的状态。</p><p>本文为笔者在Windows桌面端程序开发中实际的工程化经验汇总，包含单进程应用、托盘化、命令行参数、设置exe文件的应用信息、打包依赖库、ffi、硬编码数据安全等章节，欢迎留言讨论。</p><h2 id=1-实现单进程应用>1. 实现单进程应用</h2><p>在windows上单进程我们通常使用互斥量(Mutex)来实现单进程的判断，但是由于dart的基础库对于windows的支撑除了ffi几近于无。又由于dart是单线程模式，所以它社区有一个Mutex库，但是只是单线程内在异步场景使用的。所以，想要通过dart来实现标准的单进程程序在长期来看也是不可能的事情。</p><p>那么，我们将目光转向Flutter的runner层，其中 <code>windows\runner\win32_window.cpp</code>这个文件负责实现windows窗口的创建、显示和销毁等。</p><p>我们在其中<code>Create</code>方法中加入代码，完整函数代码如下：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&#34;synchapi.h&#34;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// others code
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>HANDLE hMutexHandle;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>bool</span> Win32Window<span style=color:#f92672>::</span>Create(<span style=color:#66d9ef>const</span> std<span style=color:#f92672>::</span>wstring<span style=color:#f92672>&amp;</span> title,
+</span></span><span style=display:flex><span><span style=color:#66d9ef>const</span> Point<span style=color:#f92672>&amp;</span> origin,
+</span></span><span style=display:flex><span><span style=color:#66d9ef>const</span> Size<span style=color:#f92672>&amp;</span> size) {
+</span></span><span style=display:flex><span>    Destroy();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    hMutexHandle <span style=color:#f92672>=</span> CreateMutex(NULL, TRUE, <span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;mutex.my.app&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (hMutexHandle <span style=color:#f92672>==</span> NULL) {
+</span></span><span style=display:flex><span>        printf(<span style=color:#e6db74>&#34;CreateMutex error: %d</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, GetLastError());
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> false;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    DWORD errorCode <span style=color:#f92672>=</span> GetLastError();
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (errorCode <span style=color:#f92672>==</span> ERROR_INVALID_HANDLE) {
+</span></span><span style=display:flex><span>        printf(<span style=color:#e6db74>&#34;Mutex name be used.&#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> false;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>else</span> <span style=color:#a6e22e>if</span> (errorCode <span style=color:#f92672>==</span> ERROR_ALREADY_EXISTS) {
+</span></span><span style=display:flex><span>        printf(<span style=color:#e6db74>&#34;Mutex name already exists.&#34;</span>);
+</span></span><span style=display:flex><span>        Destroy();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 这个FindWindowA的方法有个bug，
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#75715e>// 如果打开了一个资源管理器的文件目录和应用同名，那么它可能会找到这个资源管理器。
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#75715e>// HWND handle = FindWindowA(NULL, &#34;My App&#34;);
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 所以我们通过进程名来获取其主窗口的句柄
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#75715e>// 因为flutter是单页应用只有一个窗口，所以只要获取窗口句柄不用区分就认为是主窗口
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#75715e>// Get process id by process execute name
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        DWORD dwProcessId <span style=color:#f92672>=</span> GetProcessIdByName(TEXT(<span style=color:#e6db74>&#34;PICStudio.exe&#34;</span>));
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (dwProcessId <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            printf(<span style=color:#e6db74>&#34;Process not found!&#34;</span>);
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> false;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Get window handle by process id
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        HWND handle <span style=color:#f92672>=</span> GetMainWindowHandle(dwProcessId);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (handle <span style=color:#f92672>==</span> NULL)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            printf(<span style=color:#e6db74>&#34;Main window not found!&#34;</span>);
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> false;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        WINDOWPLACEMENT place <span style=color:#f92672>=</span> { <span style=color:#66d9ef>sizeof</span>(WINDOWPLACEMENT) };
+</span></span><span style=display:flex><span>        GetWindowPlacement(handle, <span style=color:#f92672>&amp;</span>place);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>switch</span> (place.showCmd)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>case</span> SW_SHOWMAXIMIZED:
+</span></span><span style=display:flex><span>                <span style=color:#75715e>// 错误用法：ShowWindow(handle, SW_SHOWMAXIMIZED);
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>                SendMessage(handle, WM_SYSCOMMAND, SW_SHOWMAXIMIZED, NULL);
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>case</span> SW_SHOWMINIMIZED:
+</span></span><span style=display:flex><span>                SendMessage(handle, WM_SYSCOMMAND, SW_RESTORE, NULL);
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>default</span><span style=color:#f92672>:</span>
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>if</span> (IsWindowVisible(handle))
+</span></span><span style=display:flex><span>                    SendMessage(handle, WM_SYSCOMMAND, SW_NORMAL, NULL);
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>else</span> 
+</span></span><span style=display:flex><span>                    SendMessage(handle, WM_SYSCOMMAND, SC_RESTORE, NULL);
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>        SetForegroundWindow(handle);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> false;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// others code
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}
+</span></span></code></pre></div><p>其中，通过<code>CreateMutex</code>win32 api来创建有名称的全局互斥量。如果互斥量已经被人使用了，则<code>GetLastError</code>方法就会获取到<code>ERROR_ALREADY_EXISTS</code>值。</p><p>互斥量的命名请采用不容易重复的方式，如果和其他的全局事件、信号灯、可等待计时器、作业或文件映射对象的名称相同，则会创建失败，<code>GetLastError</code>方法就会获取到<code>ERROR_INVALID_HANDLE</code>值。</p><p>写好互斥量的逻辑判断后，如果出现互斥，那么说明已经启动了一个进程了，那么当前进程就不应该继续启动。通常做法就是直接唤出已经启动了的进程，我们通过<code>GetProcessIdByName</code>找到进程号，通过<code>GetMainWindowHandle</code>找到进程的主窗口句柄，这两个方法是自定义的，附在后面。然后调用<code>GetWindowPlacement</code>获取窗口位置，<code>SendMessage</code>向已启动的进程窗口发送窗口命令的消息通知，最后调用<code>SetForegroundWindow</code>将窗口设置到前台。</p><p>在窗口被隐藏（不是最小化）的情况下，窗口的状态为正常状态，通过判断窗口是否是Visible的，进而发送不同的消息让窗口恢复显示。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>if</span> (IsWindowVisible(handle))
+</span></span><span style=display:flex><span>    SendMessage(handle, WM_SYSCOMMAND, SW_NORMAL, NULL);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>else</span> 
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>SendMessage</span>(handle, WM_SYSCOMMAND, SC_RESTORE, NULL);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>break</span>;
+</span></span></code></pre></div><blockquote><p>🚨WARNING: 显示另外进程窗口这里有个很大的问题，笔者也是花了大量的时间找了很多资料。网上很多文章人云亦云，都说使用 <code>ShowWindow()</code> 就可以实现。但实际上 <code>ShowWindow()</code> 被设计来在当前进程使用，当其他线程调用这个方法时，在目标窗口最小化的情况下是可能不工作的，使用 <code>SendMessage()</code> 才是正规符合设计的用法。</p></blockquote><p>参考网站：<a href=https://learn.microsoft.com/zh-cn/windows/win32/sync/using-mutex-objects target=_blank>https://learn.microsoft.com/zh-cn/windows/win32/sync/using-mutex-objects</a></p><p>附上 <code>GetProcessIdByName</code> 与 <code>GetMainWindowHandle</code> 方法实现，需要自行在<code>win32_window.h</code>头文件中定义私有方法。</p><p>头文件 win32_window.h：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>  <span style=color:#66d9ef>struct</span> <span style=color:#a6e22e>EnumContext</span> {
+</span></span><span style=display:flex><span>      DWORD pid;
+</span></span><span style=display:flex><span>      std<span style=color:#f92672>::</span>vector<span style=color:#f92672>&lt;</span>HWND<span style=color:#f92672>&gt;</span> result;
+</span></span><span style=display:flex><span>  };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>// Get process id by process execute name
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  DWORD <span style=color:#a6e22e>GetProcessIdByName</span>(LPCTSTR szProcessName);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>// Get window handle by process id
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  HWND <span style=color:#a6e22e>GetMainWindowHandle</span>(DWORD dwProcessId);
+</span></span></code></pre></div><p>cpp文件 win32_window.cpp：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>DWORD Win32Window<span style=color:#f92672>::</span>GetProcessIdByName(LPCTSTR szProcessName)
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    DWORD dwProcessId <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>    HANDLE hSnapshot <span style=color:#f92672>=</span> CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, <span style=color:#ae81ff>0</span>);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (hSnapshot <span style=color:#f92672>==</span> INVALID_HANDLE_VALUE)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    PROCESSENTRY32 process;
+</span></span><span style=display:flex><span>    process.dwSize <span style=color:#f92672>=</span> <span style=color:#66d9ef>sizeof</span>(PROCESSENTRY32);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (Process32First(hSnapshot, <span style=color:#f92672>&amp;</span>process))
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>do</span>
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> (std<span style=color:#f92672>::</span>wstring(process.szExeFile) <span style=color:#f92672>==</span> szProcessName)
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                dwProcessId <span style=color:#f92672>=</span> process.th32ProcessID;
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        } <span style=color:#66d9ef>while</span> (Process32Next(hSnapshot, <span style=color:#f92672>&amp;</span>process));
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    CloseHandle(hSnapshot);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> dwProcessId;
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>HWND Win32Window<span style=color:#f92672>::</span>GetMainWindowHandle(DWORD processId)
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#75715e>//std::vector&lt;HWND&gt; vHwnds;
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    EnumContext ctx;
+</span></span><span style=display:flex><span>    ctx.pid <span style=color:#f92672>=</span> processId;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 枚举所有窗口句柄
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    EnumWindows(
+</span></span><span style=display:flex><span>        [](HWND hwnd, LPARAM lParam) <span style=color:#f92672>-&gt;</span> BOOL {
+</span></span><span style=display:flex><span>            EnumContext<span style=color:#f92672>*</span> ctx <span style=color:#f92672>=</span> (EnumContext<span style=color:#f92672>*</span>)lParam;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            DWORD dwProcessId <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>            GetWindowThreadProcessId(hwnd, <span style=color:#f92672>&amp;</span>dwProcessId);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> (dwProcessId <span style=color:#f92672>==</span> ctx<span style=color:#f92672>-&gt;</span>pid <span style=color:#f92672>&amp;&amp;</span> IsWindowVisible(hwnd) <span style=color:#f92672>&amp;&amp;</span> IsWindowEnabled(hwnd)) {
+</span></span><span style=display:flex><span>                ctx<span style=color:#f92672>-&gt;</span>result.push_back(hwnd);
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>return</span> FALSE;
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> TRUE;
+</span></span><span style=display:flex><span>        },
+</span></span><span style=display:flex><span>        (LPARAM)<span style=color:#f92672>&amp;</span>ctx
+</span></span><span style=display:flex><span>    );
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> ctx.result.empty() <span style=color:#f92672>?</span> NULL <span style=color:#f92672>:</span> ctx.result[<span style=color:#ae81ff>0</span>];
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=2-托盘化>2. 托盘化</h2><p>桌面程序托盘化是一个很常见的形态，它不是一个具体的库或者技术，而是一套技术方案。它需要实现以下几点：</p><ul><li>在托盘中显示图标，点击可以恢复窗口状态</li><li>托盘可以右键菜单</li><li>点关闭窗口并不关闭，而是将窗口隐藏（与最小化的区别是任务栏不显示图标）</li></ul><p>很显然，Flutter框架是不支持Desktop的托盘化和窗口显示状态的控制，不怪我喷他桌面这块的水平像个小学僧，完全摆烂等社区自己做。</p><p>感谢社区开发者开源了两个托盘库：<a href=https://pub.dev/packages/system_tray target=_blank>system_tray</a>
+和 <a href=https://pub.dev/packages/tray_manager target=_blank>tray_manager</a>
+，这两个库我选择 tray_manager，就因为它使用方式更简单，windows上的右键的UI更现代化。</p><p>感谢bitsdojo大佬在flutter desktop还是未正式发布时就在带病为爱发电的 <a href=https://github.com/bitsdojo/bitsdojo_window target=_blank>bitsdojo_window</a>
+库，都过去快3年了。因为我们写的Home组件只是一个窗口内容区域，窗口是由runner的c++调用系统api创建的，Flutter并没有提供在UI内直接控制和访问窗口的能力。所以这个库直到现在还是替Flutter官方弥补这一块缺失的重要工具，它提供了一个<code>appWindow</code>对象基本覆盖你对窗口常规能用到的所有点。一般用于实现隐藏系统标题栏，自己实现标题栏。</p><h3 id=21-创建托盘图标>2.1. 创建托盘图标</h3><p>首先，我们创建托盘图标，只需要在home.dart中加入下列代码：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>import</span> <span style=color:#e6db74>&#39;package:tray_manager/tray_manager.dart&#39;</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>_HomeState</span> <span style=color:#66d9ef>extends</span> State<span style=color:#f92672>&lt;</span>Home<span style=color:#f92672>&gt;</span> <span style=color:#66d9ef>with</span> TrayListener {
+</span></span><span style=display:flex><span>  <span style=color:#960050;background-color:#1e0010>@</span>override
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>void</span> initState() {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>String</span> iconPath <span style=color:#f92672>=</span> Platform.isWindows <span style=color:#f92672>?</span> <span style=color:#e6db74>&#39;assets/images/app.ico&#39;</span> <span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;assets/images/app.png&#39;</span>;
+</span></span><span style=display:flex><span>    trayManager.addListener(<span style=color:#66d9ef>this</span>);
+</span></span><span style=display:flex><span>    trayManager.setIcon(iconPath);   
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// ...
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#960050;background-color:#1e0010>@</span>override
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>void</span> dispose() {
+</span></span><span style=display:flex><span>    trayManager.removeListener(<span style=color:#66d9ef>this</span>);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>super</span>.dispose();
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>在初始化widget的时候开启托盘的监听并且设置托盘图标，在销毁widget的时候移除监听。托盘图标对于托盘化是必要的，请务必添加。</p><p>其次，实现点击托盘图标恢复窗口显示状态，代码：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>import</span> <span style=color:#e6db74>&#39;package:bitsdojo_window/bitsdojo_window.dart&#39;</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>_HomeState</span> <span style=color:#66d9ef>extends</span> State<span style=color:#f92672>&lt;</span>Home<span style=color:#f92672>&gt;</span> <span style=color:#66d9ef>with</span> TrayListener {
+</span></span><span style=display:flex><span>  <span style=color:#960050;background-color:#1e0010>@</span>override
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>void</span> onTrayIconMouseDown() {
+</span></span><span style=display:flex><span>    appWindow.restore();
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>这里实现了抽象类型 TrayListener 的 <code>onTrayIconMouseDown</code>方法，它是 tray_manager 库提供的4个鼠标回调之一，都有：</p><ul><li>onTrayIconMouseDown()</li><li>onTrayIconMouseUp()</li><li>onTrayIconRightMouseDown()</li><li>onTrayIconRightMouseUp()</li></ul><p>分别是左键按下托盘图标，左键从托盘图标上弹起，右键按下托盘图标，右键从托盘图标上弹起。但是，经过实测，使用 tray_manager: 0.2.0，两个Up方法都未能被触发，暂时不清楚是否还有隐含的信息。</p><p>所以，我们在鼠标左键按下的时候调用 <code>appWindow.restore()</code>恢复窗口，十分简单。</p><h3 id=22-托盘右键菜单>2.2. 托盘右键菜单</h3><p><code>tray_manager</code>库提供了美观的托盘菜单，使用方式是先设置菜单，再弹出菜单。代码：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>import</span> <span style=color:#e6db74>&#39;package:tray_manager/tray_manager.dart&#39;</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>_HomeState</span> <span style=color:#66d9ef>extends</span> State<span style=color:#f92672>&lt;</span>Home<span style=color:#f92672>&gt;</span> <span style=color:#66d9ef>with</span> TrayListener {
+</span></span><span style=display:flex><span>  late Menu trayMenu;
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>  <span style=color:#960050;background-color:#1e0010>@</span>override
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>void</span> onTrayIconRightMouseDown() {
+</span></span><span style=display:flex><span>    trayMenu <span style=color:#f92672>=</span> Menu(items: [
+</span></span><span style=display:flex><span>      MenuItem(
+</span></span><span style=display:flex><span>        label: <span style=color:#e6db74>&#39;Open&#39;</span>,
+</span></span><span style=display:flex><span>        onClick: (item) <span style=color:#f92672>=&gt;</span> onTrayIconMouseDown(),
+</span></span><span style=display:flex><span>      ),
+</span></span><span style=display:flex><span>      MenuItem.separator(),
+</span></span><span style=display:flex><span>      MenuItem(
+</span></span><span style=display:flex><span>        label: <span style=color:#e6db74>&#39;Exit&#39;</span>,
+</span></span><span style=display:flex><span>        onClick: (item) <span style=color:#f92672>=&gt;</span> exit(<span style=color:#ae81ff>0</span>),
+</span></span><span style=display:flex><span>      ),
+</span></span><span style=display:flex><span>    ]);
+</span></span><span style=display:flex><span>    trayManager.setContextMenu(trayMenu);
+</span></span><span style=display:flex><span>    trayManager.popUpContextMenu();
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>我们在 didChangeDependencies() 触发时设置菜单，这个时候UI已经准备好了。实现了抽象类型 TrayListener 的<code>onTrayIconRightMouseDown</code>方法，在鼠标右键点击托盘鼠标的时候，弹出托盘菜单。</p><blockquote><p>🚨WARNING: 尝试过在initState()的时候初始化菜单，结果是调用了弹出窗口无反应。更新：使用 didChangeDependencies() 时初始化菜单，在更新flutter到3.10后失效，需要在弹出时设置菜单。</p></blockquote><h3 id=23-点击关闭窗口隐藏>2.3. 点击关闭窗口隐藏</h3><p>因为关闭按钮在标题栏上，属于系统窗口的一部分，所以它。。。编不下去了，就是Flutter不支持你控制这些，你把握不住！</p><p>其实，我们只需要在runner的<code>win32_window.cpp</code>中处理窗口消息回调中手动增加关闭消息的C++代码，将窗口设置为隐藏窗口就可以了。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>LRESULT Win32Window<span style=color:#f92672>::</span>MessageHandler(HWND hwnd,
+</span></span><span style=display:flex><span>                            UINT <span style=color:#66d9ef>const</span> message,
+</span></span><span style=display:flex><span>                            WPARAM <span style=color:#66d9ef>const</span> wparam,
+</span></span><span style=display:flex><span>                            LPARAM <span style=color:#66d9ef>const</span> lparam) <span style=color:#66d9ef>noexcept</span> {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>switch</span> (message) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> WM_CLOSE:
+</span></span><span style=display:flex><span>        ShowWindow(hwnd, SW_HIDE);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>//case ...
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>DefWindowProc</span>(window_handle_, message, wparam, lparam);
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=24-启动程序为托盘>2.4. 启动程序为托盘</h3><p>很多桌面程序都有一种启动后无感直接托盘化的模式，flutter按理来说也应该实现这样一种能力，但是不出意外它没有。所以，自己动手！</p><blockquote><p>NOTE：笔者已经尝试了使用windowsManager在 main 方法里等待界面准备完成后将将其隐藏。但是由于flutter控制的是窗口内容区域，需要先显示窗口再进行渲染。此时窗口已经弹出，然后出现画面，然后窗口隐藏。对于用户来说就是突然闪了一下，这样看起来像个得瑟极了的流氓软件，这种方法请不要再多加尝试。</p></blockquote><p>启动为托盘的实现思路都是创建窗口后将其隐藏，然后根据条件控制是否显示。</p><p>所以为了放置flutter将其唤醒，我们修改<code>win32_window.cpp</code>文件中的Show方法，让其默认显示一个隐藏的窗口：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>bool</span> Win32Window<span style=color:#f92672>::</span>Show() {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>ShowWindow</span>(window_handle_, SW_HIDE);
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>然后，再到dart的 main()方法里根据条件控制窗口初始化正常显示或不显示：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>main</span>() async {
+</span></span><span style=display:flex><span>  <span style=color:#75715e>// ...
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>const</span> needTary <span style=color:#f92672>=</span> true;
+</span></span><span style=display:flex><span>  windowManager.waitUntilReadyToShow(windowOptions, () async {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>needTary) {
+</span></span><span style=display:flex><span>      await windowManager.show();
+</span></span><span style=display:flex><span>      await windowManager.focus();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  });
+</span></span><span style=display:flex><span>  <span style=color:#75715e>// ...
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}
+</span></span></code></pre></div><p>综合起来，我们就实现了窗口关闭托盘化，点击托盘图标恢复窗口显示，右键托盘图标显示菜单的一整套托盘化方案的核心内容。可以以这个为基础框架，细化实现自己的托盘功能。</p><h2 id=3-命令行参数>3. 命令行参数</h2><p>Dart本身就支持main函数接收命令行参数，而flutter框架也解析了命令行参数并将其传递给了drat的main函数。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#75715e>// main.dart
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>void</span> main(List<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>String</span><span style=color:#f92672>&gt;</span> arguments) <span style=color:#66d9ef>async</span> {
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>命令行参数<code>arguments</code>是List 字符串数组类型，和其他语言相同，你可以自己解析参数内容。也可以使用解析的库，我推荐使用解析库 <a href=https://github.com/dart-lang/args target=_blank>args</a>
+：</p><pre tabindex=0><code>&gt; dart pub add args
+</code></pre><blockquote><p>NOTE: 根据笔者的经验，flutter在3.10前的版本对于短横线参数（如：<code>-l</code>）的 flag 会解析漏掉。这个问题在3.10没有遇到，尽量使用新版flutter。</p></blockquote><p>首先，构建一个参数的解析器：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>final</span> parser <span style=color:#f92672>=</span> ArgParser()
+</span></span><span style=display:flex><span>  ..addFlag(<span style=color:#e6db74>&#34;add&#34;</span>, defaultsTo: <span style=color:#66d9ef>false</span>, abbr: <span style=color:#e6db74>&#34;a&#34;</span>)
+</span></span><span style=display:flex><span>  ..addFlag(<span style=color:#e6db74>&#34;delete&#34;</span>, defaultsTo: <span style=color:#66d9ef>false</span>, abbr: <span style=color:#e6db74>&#34;d&#34;</span>)
+</span></span><span style=display:flex><span>  ..addFlag(<span style=color:#e6db74>&#34;query&#34;</span>, defaultsTo: <span style=color:#66d9ef>false</span>, abbr: <span style=color:#e6db74>&#34;q&#34;</span>)
+</span></span><span style=display:flex><span>  ..addFlag(<span style=color:#e6db74>&#34;update&#34;</span>, defaultsTo: <span style=color:#66d9ef>false</span>, abbr: <span style=color:#e6db74>&#34;u&#34;</span>);
+</span></span></code></pre></div><p>在<code>addFlag</code>的参数中定义你需要解析的flag类参数，第一个传入值是flag的完整名称，第二个值<code>defaultsTo</code>是当未解析到时的默认值，第三个值<code>abbr</code>时flag的单字符缩写。名称和缩写决定着传参的形式：</p><pre tabindex=0><code>&gt; myapp.exe --add
+&gt; myapp.exe -a
+</code></pre><p>其他的还有<code>addOption</code>,<code>addCommand</code>,<code>addMultiOption</code>,<code>addSeparator</code>等满足所有参数类型的需求。</p><p>接着解析命令行参数得到解析结果，对于flag类型的参数通过<code>wasParsed</code>函数判断是否是包含指定命令行参数。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span>ArgResults argResults <span style=color:#f92672>=</span> parser.parse(arguments);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span>(argResults.wasParsed(<span style=color:#e6db74>&#34;add&#34;</span>)){
+</span></span><span style=display:flex><span>  <span style=color:#75715e>// do add logic
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}
+</span></span></code></pre></div><h2 id=4-设置exe的应用信息>4. 设置exe的应用信息</h2><p>对于一个用于生产使用的软件产品来说，完善的应用信息比不可少，一般包含以下几个部分：</p><ol><li>专业的程序图标</li><li>可执行程序名</li><li>程序文件信息</li><li>语义化的版本号</li></ol><h3 id=41-设置图标>4.1. 设置图标</h3><p>图标在可执行程序文件上显示，在程序的标题栏上显示，也应用于基于可执行程序创建的桌面和开始菜单的快捷方式上限制，还在任务栏上和任务管理器中显示。</p><p>在flutter中设置图标的方式比较简单，将你的图标放置在windows\runner\resources目录下。然后，找到 windows\runner 下的<code>Runner.rc</code>文件，替换其中的图标文件名就可以了。</p><pre tabindex=0><code>IDI_APP_ICON            ICON                    &#34;resources\your_app.ico&#34;
+</code></pre><h3 id=42-设置程序名称>4.2. 设置程序名称</h3><p>默认情况下编译出的可执行程序名称与项目名称一致，单往往很多时候项目名称并不是我们最终发布出去的产品名称，这种情况下就需要修改编译生成的程序名称。</p><p>找到 windows 目录下的<code>CMakeList</code>文件，修改下面这行中的name为你的产品名称。</p><pre tabindex=0><code>set(BINARY_NAME &#34;YourAppName&#34;)
+</code></pre><h3 id=43-设置程序文件信息>4.3. 设置程序文件信息</h3><p>程序文件信息可在编译出的可执行程序文件上右键，查看<code>属性</code>-><code>详细信息</code>。</p><p>这些信息在 windows\runner 下的<code>Runner.rc</code>文件中修改如下字符内容。</p><pre tabindex=0><code>BEGIN
+    BLOCK &#34;StringFileInfo&#34;
+    BEGIN
+        BLOCK &#34;040904e4&#34;
+        BEGIN
+            VALUE &#34;CompanyName&#34;, &#34;Your Company Inc&#34; &#34;\0&#34;
+            VALUE &#34;FileDescription&#34;, &#34;YourApp Descritions&#34; &#34;\0&#34;
+            VALUE &#34;FileVersion&#34;, VERSION_AS_STRING &#34;\0&#34;
+            VALUE &#34;InternalName&#34;, &#34;YourApp&#34; &#34;\0&#34; //invalid
+            VALUE &#34;LegalCopyright&#34;, &#34;Copyright (C) 2023 Your Company Inc. All rights reserved.&#34; &#34;\0&#34;
+            VALUE &#34;OriginalFilename&#34;, &#34;YourAppName.exe&#34; &#34;\0&#34; //invalid
+            VALUE &#34;ProductName&#34;, &#34;Your App Name&#34; &#34;\0&#34;
+            VALUE &#34;ProductVersion&#34;, VERSION_AS_STRING &#34;\0&#34;
+        END
+    END
+    BLOCK &#34;VarFileInfo&#34;
+    BEGIN
+        VALUE &#34;Translation&#34;, 0x409, 1252
+    END
+END
+</code></pre><h3 id=44-设置语义化的版本号>4.4. 设置语义化的版本号</h3><p>一个合理的版本发布过程和一套合理的版本编撰规则对于产品持续保持活力都是十分有利的，flutter支持<a href=https://semver.org/ target=_blank>语义化的版本</a>
+(2.0.0)规则。设置版本在<code>pubspec.yaml</code>中修改 version 的值就可以了。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>version</span>: <span style=color:#ae81ff>1.0.0</span>-<span style=color:#ae81ff>rc1</span>
+</span></span></code></pre></div><p>默认情况下版本号为1.0.0+1，+1为build号。编译出来的文件版本（FileVersio）为1.0.0.1，产品版本（ProductVersion）为1.0.0+1。改为+2则文件版本为1.0.0.2，产品版本为1.0.0+2。</p><p>同时，它也支持预发布版，编译出来的文件版本为1.0.0.0，产品版本为1.0.0-rc1：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>version</span>: <span style=color:#ae81ff>1.0.0</span>-<span style=color:#ae81ff>rc1</span>
+</span></span></code></pre></div><p>上述规则也可以同时存在，编译出来的文件版本为1.0.0.1，产品版本为1.0.0-rc1+1：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>version</span>: <span style=color:#ae81ff>1.0.0</span>-<span style=color:#ae81ff>rc1+1</span>
+</span></span></code></pre></div><h2 id=5-打包依赖库>5. 打包依赖库</h2><p>一个复杂的应用程序一般都会包含一些文档、图片、库文件、字体等资源文件，其中特别是将外部的依赖库二进制文件（.dll .so）作为本地资源文件需要编译到程序包中，在程序运行时进行调用。</p><p>flutter提供了资源文件的配置方式，在<code>pubspec.yaml</code>文件中配置：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>flutter</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>assets</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ae81ff>assets/images/</span>
+</span></span><span style=display:flex><span>    - <span style=color:#ae81ff>lib/native/win/libA.dll</span>
+</span></span><span style=display:flex><span>    - <span style=color:#ae81ff>lib/native/linux/libA.so</span>
+</span></span><span style=display:flex><span>    - <span style=color:#e6db74>&#34;docs/doc.pdf&#34;</span>
+</span></span></code></pre></div><p>然后，实现<code>getPlatformResourcePath</code>方法根据assets的key获取资源文件的绝对路径。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span>getPlatformResourcePath(<span style=color:#e6db74>&#34;lib/native/win/libA.dll&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>String</span> getPlatformResourcePath(<span style=color:#66d9ef>String</span> key) {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (Platform.isLinux) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> path.join(Directory.current.path, key);
+</span></span><span style=display:flex><span>  } <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>if</span> (Platform.isWindows) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> assetsPath <span style=color:#f92672>=</span> path.join(Directory.current.path, <span style=color:#e6db74>&#34;data/flutter_assets&#34;</span>, key);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>File(assetsPath).existsSync()) {
+</span></span><span style=display:flex><span>      assetsPath <span style=color:#f92672>=</span> path.join(Directory.current.path, key);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> assetsPath;
+</span></span><span style=display:flex><span>  } <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>throw</span> Exception(<span style=color:#e6db74>&#39;Unsupported platform&#39;</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>执行命令：</p><pre tabindex=0><code>flutter build windows --release
+</code></pre><p>在 <code>build\windows\runner\Release</code>下的<code>data\flutter_asserts\lib\native\win</code>下就能找得到库文件了。</p><h2 id=6-条件编译>6. 条件编译</h2><p>Flutter开发框架目前还不支持根据宏命令进行条件编译，在桌面开发生态里无疑是一个大缺失。不过，我们可以使用一些三方工具来弥补这个问题。</p><p>Definetool工具，这是一个批量宏命令替换工具，可以将代码中的宏包括的代码按照条件进行注释或解开注释。这样我们在编译前运行一下工具指定需要编译的宏，再进行编译就可以得到我们想要的代码了。基本上支持flutter项目下的绝大多数后缀文件，比如 &ldquo;.dart&rdquo;, &ldquo;.yaml&rdquo;, &ldquo;.yml&rdquo;, &ldquo;.podspec&rdquo;, &ldquo;.java&rdquo;, &ldquo;.kt&rdquo;, &ldquo;.go&rdquo;, &ldquo;.rs&rdquo;, &ldquo;.js&rdquo;, &ldquo;.ts&rdquo;, &ldquo;.php&rdquo;, &ldquo;.cs&rdquo;, &ldquo;.swift&rdquo;, &ldquo;.py&rdquo;, &ldquo;.cpp&rdquo;, &ldquo;.c&rdquo;, &ldquo;.rc&rdquo;</p><p>Definetool工具没有提供二进制release，需要自行本机编译，将编译后的definetool.exe放入flutter项目根目录下。链接：<a href=https://github.com/orange-pig/definetool target=_blank>orange-pig/definetool (github.com)</a></p><p>代码示例：控制widget的属性</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span>    Container(
+</span></span><span style=display:flex><span>        decoration: <span style=color:#66d9ef>const</span> BoxDecoration(
+</span></span><span style=display:flex><span>          image: DecorationImage(
+</span></span><span style=display:flex><span><span style=color:#75715e>// ###ifdef DEBUG
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>            image: AssetImage(<span style=color:#e6db74>&#34;assets/images/a.png&#34;</span>),
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// ###endif
+</span></span></span><span style=display:flex><span><span style=color:#75715e>// ###ifdef RELEASE
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#75715e>/*            image: AssetImage(&#34;assets/images/b.png&#34;),
+</span></span></span><span style=display:flex><span><span style=color:#75715e>*/</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// ###endif
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>            fit: BoxFit.fill,
+</span></span><span style=display:flex><span>          ),
+</span></span><span style=display:flex><span>        ),
+</span></span><span style=display:flex><span>      )
+</span></span></code></pre></div><p>然后按照需求执行下面其中一条命令即可完成相应的代码切换。</p><pre tabindex=0><code>&gt; ./definetool -define DEBUG
+&gt; ./definetool -define RELEASE
+</code></pre><h2 id=7-使用命令行工具简化命令执行>7. 使用命令行工具简化命令执行</h2><p>推荐使用Rust生态的just工具，这是一个便捷的执行命令的工具，<a href=https://just.systems/man/zh/ target=_blank>Just 用户指南</a>
+。</p><p>当你的电脑上已经全局安装了just工具之后，按照官方文档在你的项目中创建<code>.justfile</code>。我们就可以在<code>.justfile</code>文件后追加命令的配方。</p><pre tabindex=0><code>release:
+    ./definetool -define RELEASE
+</code></pre><p>在命令行里运行 <code>just release</code>就可以执行其对应的命令了。</p><p>也可以，一个配方指定多条命令，它们将按顺序依次执行。</p><pre tabindex=0><code>release:
+    ./definetool -define RELEASE
+    flutter build windows --release
+</code></pre><p>还可以，指定执行其他配方。</p><pre tabindex=0><code>def_release:
+    ./definetool -define RELEASE
+
+release:
+    just def_release
+    flutter build windows --release
+</code></pre><p>或者，将其他配方作为当前命令的prepare配方，简化命令定义。prepare配方在执行当前的实际命令前执行，可以同时指定多个按空格隔开，它们按次序执行。</p><pre tabindex=0><code>def_release:
+    ./definetool -define RELEASE
+
+def_moudleA:
+    ./definetool -define MOUDLE_A
+
+release: def_release def_moudleA
+    flutter build windows --release
+</code></pre><p>甚至，你还可以设置变量和命令参数。</p><pre tabindex=0><code>version := `(Select-String -Pattern &#39;^version:&#39; pubspec.yaml).Line -replace &#39;^version:\s*&#39;, &#39;&#39;`
+mode := &#34;Release&#34;
+
+package:
+    &amp; &#39;C:\Program Files\7-Zip\7z.exe&#39; u -tzip &#34;./build/windows/runner/Release/MyApp_{{trim(version)}}_{{mode}}.zip&#34; -r ./build/windows/runner/Release/*.*  -xr0!&#39;*.zip&#39;
+    
+def_release:
+    ./definetool -define RELEASE
+
+release: def_release
+    flutter build windows --release
+
+publish_release: release
+    just mode=Release package
+</code></pre><p>这些功能的组合，基本就能满足常见的需求了，更多的请查看just工具的官方文档和示例。</p><h2 id=8-日志>8. 日志</h2><p>日志记录使用 <a href=https://pub.dev/packages/logger target=_blank>logger | Dart package</a>
+库，它可以输出漂亮的控制台日志，也可以按我们想要的格式输出到文件中。</p><p>创建 my_logger.dart 文件定义你的logger。其中的宏注释是条件编译，见第6节。logger 库已经定义了  <code>FileOuput</code>类，如果你想自己定义想要的格式输出，请自己实现 <code>YourFileOuput</code>。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>import</span> <span style=color:#e6db74>&#39;dart:convert&#39;</span>;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>import</span> <span style=color:#e6db74>&#39;dart:io&#39;</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>import</span> <span style=color:#e6db74>&#39;package:logger/logger.dart&#39;</span>;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>import</span> <span style=color:#e6db74>&#39;package:path/path.dart&#39;</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>late Logger mylogger;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>void</span> loggerInit() {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>final</span> logDic <span style=color:#f92672>=</span> Directory(<span style=color:#e6db74>&#34;your_log_path&#34;</span>);
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>logDic.existsSync()) {
+</span></span><span style=display:flex><span>    logDic.createSync(recursive: <span style=color:#66d9ef>true</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  plogger <span style=color:#f92672>=</span> Logger(
+</span></span><span style=display:flex><span>    filter: ProductionFilter(),
+</span></span><span style=display:flex><span>    printer: SimplePrinter(printTime: <span style=color:#66d9ef>true</span>),
+</span></span><span style=display:flex><span>    output: MultiOutput([
+</span></span><span style=display:flex><span><span style=color:#75715e>// ###ifdef DEBUG
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>      ConsoleOutput(),
+</span></span><span style=display:flex><span><span style=color:#75715e>// ###endif
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>      MyFileOutput(file: File(join(logDic.path, <span style=color:#e6db74>&#34;p.log&#34;</span>))),
+</span></span><span style=display:flex><span>    ]),
+</span></span><span style=display:flex><span><span style=color:#75715e>// ###ifdef DEBUG
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    level: Logger.level
+</span></span><span style=display:flex><span><span style=color:#75715e>// ###endif
+</span></span></span><span style=display:flex><span><span style=color:#75715e>// ###ifdef RELEASE
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#75715e>/*      level: Level.info
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>*/</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// ###endif
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  );
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MyFileOutput</span> <span style=color:#66d9ef>extends</span> LogOutput {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>final</span> File file;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>bool</span> overrideExisting;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>final</span> Encoding encoding;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  late IOSink _sink;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  MyFileOutput({
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>required</span> <span style=color:#66d9ef>this</span>.file,
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>this</span>.overrideExisting <span style=color:#f92672>=</span> <span style=color:#66d9ef>false</span>,
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>this</span>.encoding <span style=color:#f92672>=</span> utf8,
+</span></span><span style=display:flex><span>  });
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#960050;background-color:#1e0010>@</span>override
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>void</span> init() {
+</span></span><span style=display:flex><span>    _sink <span style=color:#f92672>=</span> file.openWrite(
+</span></span><span style=display:flex><span>      mode: overrideExisting <span style=color:#f92672>?</span> FileMode.writeOnly <span style=color:#f92672>:</span> FileMode.writeOnlyAppend,
+</span></span><span style=display:flex><span>      encoding: encoding,
+</span></span><span style=display:flex><span>    );
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#960050;background-color:#1e0010>@</span>override
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>void</span> output(OutputEvent event) {
+</span></span><span style=display:flex><span>    _sink.writeAll(event.lines, <span style=color:#e6db74>&#39;</span><span style=color:#ae81ff>\r\n</span><span style=color:#e6db74>&#39;</span>);
+</span></span><span style=display:flex><span>    _sink.write(<span style=color:#e6db74>&#39;</span><span style=color:#ae81ff>\r\n</span><span style=color:#e6db74>&#39;</span>); <span style=color:#75715e>// end of last line
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#960050;background-color:#1e0010>@</span>override
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>void</span> destroy() <span style=color:#66d9ef>async</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>await</span> _sink.flush();
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>await</span> _sink.close();
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>使用方式:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#75715e>// 在main函数里初始化
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>loggerInit();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// 在需要记录日志的地方调用
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>mylogger.i(<span style=color:#e6db74>&#34;****** Hello Logger ******&#34;</span>);
+</span></span></code></pre></div><h2 id=9-ffi的用法>9. FFI的用法</h2><p>在桌面开发过程中，我们经常会涉及到对系统 win32 api的调用或者对一些动态链接库进行调用。win32 的调用已经被封装成了一个库 <a href=https://pub.dev/packages/win32 target=_blank>win32 | Dart package</a>
+。动态链接库我们还是得自己通过ffi进行访问，教程网上很多，这里主要介绍一些用法。</p><p><code>定义常量</code></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>const</span> <span style=color:#66d9ef>int</span> BLOCK_SIZE <span style=color:#f92672>=</span> <span style=color:#ae81ff>32</span>;
+</span></span></code></pre></div><p><code>定义结构体</code></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>final</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>XXENTRY</span> <span style=color:#66d9ef>extends</span> ffi.Struct {
+</span></span><span style=display:flex><span>  <span style=color:#960050;background-color:#1e0010>@</span>ffi.UnsignedLong() <span style=color:#75715e>// ffi提供了很多基础类型供你使用
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  external <span style=color:#66d9ef>int</span> len;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#960050;background-color:#1e0010>@</span>ffi.UnsignedChar() <span style=color:#75715e>// dart里头只有int，不管你是啥子类型，到了dart都要变成int
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  external <span style=color:#66d9ef>int</span> count;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#960050;background-color:#1e0010>@</span>ffi.Array.multi([<span style=color:#ae81ff>66</span>]) <span style=color:#75715e>// 定义数组，需要指定数组长度
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  external ffi.Array<span style=color:#f92672>&lt;</span>ffi.UnsignedChar<span style=color:#f92672>&gt;</span> messages;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  external TIME createTime; <span style=color:#75715e>// 其他结构体类型
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}
+</span></span></code></pre></div><p><code>定义函数导出</code></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#75715e>// 打开动态库
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>ffi.DynamicLibrary dylib <span style=color:#f92672>=</span> ffi.DynamicLibrary.open(<span style=color:#e6db74>&#34;libraryPath&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// 获取lookup
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>final</span> ffi.Pointer<span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;</span> Function<span style=color:#f92672>&lt;</span>T <span style=color:#66d9ef>extends</span> ffi.NativeType<span style=color:#f92672>&gt;</span>(<span style=color:#66d9ef>String</span> symbolName) _lookup <span style=color:#f92672>=</span> dylib.lookup;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// 按C接口定义获取导出函数地址
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>final</span> _MessageBoxWPtr <span style=color:#f92672>=</span> _lookup<span style=color:#f92672>&lt;</span>ffi.NativeFunction<span style=color:#f92672>&lt;</span>ffi.Int32<span style=color:#f92672>&gt;</span> Function(ffi.IntPtr, ffi.Pointer<span style=color:#f92672>&lt;</span>ffi.Utf16<span style=color:#f92672>&gt;</span>, ffi.Pointer<span style=color:#f92672>&lt;</span>ffi.Utf16<span style=color:#f92672>&gt;</span>, ffi.Uint32)<span style=color:#f92672>&gt;</span>(<span style=color:#e6db74>&#39;MessageBoxW&#39;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// 转换为dart定义
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>final</span> MessageBoxW <span style=color:#f92672>=</span> _MessageBoxWPtr.asFunction<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>int</span> Function(<span style=color:#66d9ef>int</span>, ffi.Pointer<span style=color:#f92672>&lt;</span>ffi.Utf16<span style=color:#f92672>&gt;</span>, ffi.Pointer<span style=color:#f92672>&lt;</span>ffi.Utf16<span style=color:#f92672>&gt;</span>, <span style=color:#66d9ef>int</span> uType)<span style=color:#f92672>&gt;</span>();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// 前两步也可以简化为，拆开是为了理解其含义
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>final</span> MessageBoxW <span style=color:#f92672>=</span> user32.lookupFunction<span style=color:#f92672>&lt;</span>
+</span></span><span style=display:flex><span>      Int32 Function(IntPtr hWnd, Pointer<span style=color:#f92672>&lt;</span>Utf16<span style=color:#f92672>&gt;</span> lpText, Pointer<span style=color:#f92672>&lt;</span>Utf16<span style=color:#f92672>&gt;</span> lpCaption, Uint32 uType),
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>int</span> Function(<span style=color:#66d9ef>int</span> hWnd, Pointer<span style=color:#f92672>&lt;</span>Utf16<span style=color:#f92672>&gt;</span> lpText, Pointer<span style=color:#f92672>&lt;</span>Utf16<span style=color:#f92672>&gt;</span> lpCaption, <span style=color:#66d9ef>int</span> uType)<span style=color:#f92672>&gt;</span>(<span style=color:#e6db74>&#39;MessageBoxW&#39;</span>);
+</span></span></code></pre></div><p><code>结构体的创建</code></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>final</span> wndClassLen <span style=color:#f92672>=</span> ffi.sizeOf<span style=color:#f92672>&lt;</span>WNDCLASSW<span style=color:#f92672>&gt;</span>();
+</span></span><span style=display:flex><span><span style=color:#66d9ef>final</span> ffi.Pointer<span style=color:#f92672>&lt;</span>WNDCLASSW<span style=color:#f92672>&gt;</span> wndClassPtr <span style=color:#f92672>=</span> calloc.allocate<span style=color:#f92672>&lt;</span>WNDCLASSW<span style=color:#f92672>&gt;</span>(wndClassLen);
+</span></span><span style=display:flex><span>wndClass.ref.style <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>wndClass.ref.lpfnWndProc <span style=color:#f92672>=</span> nullptr; <span style=color:#75715e>// 用 nullptr 简化示例
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>wndClass.ref.cbClsExtra <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>wndClass.ref.cbWndExtra <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>wndClass.ref.hInstance <span style=color:#f92672>=</span> nullptr;
+</span></span><span style=display:flex><span>wndClass.ref.hIcon <span style=color:#f92672>=</span> nullptr;
+</span></span><span style=display:flex><span>wndClass.ref.hCursor <span style=color:#f92672>=</span> nullptr;
+</span></span><span style=display:flex><span>wndClass.ref.hbrBackground <span style=color:#f92672>=</span> nullptr;
+</span></span><span style=display:flex><span>wndClass.ref.lpszMenuName <span style=color:#f92672>=</span> nullptr;
+</span></span><span style=display:flex><span>wndClass.ref.lpszClassName <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;DartWindowClass&#39;</span>.toNativeUtf16();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// free
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>calloc.free(wndClassPtr);
+</span></span></code></pre></div><p><code>指针的转换</code></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>final</span> wndClassLen <span style=color:#f92672>=</span> ffi.sizeOf<span style=color:#f92672>&lt;</span>WNDCLASSW<span style=color:#f92672>&gt;</span>();
+</span></span><span style=display:flex><span><span style=color:#66d9ef>final</span> ffi.Pointer<span style=color:#f92672>&lt;</span>WNDCLASSW<span style=color:#f92672>&gt;</span> wndClassPtr <span style=color:#f92672>=</span> calloc.allocate<span style=color:#f92672>&lt;</span>WNDCLASSW<span style=color:#f92672>&gt;</span>(wndClassLen);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> wndClassPtrVoid <span style=color:#f92672>=</span> ffi.Pointer<span style=color:#f92672>&lt;</span>ffi.Void<span style=color:#f92672>&gt;</span>.fromAddress(wndClassPtr.address);
+</span></span></code></pre></div><p><code>二进制数组转字符串</code></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>String</span> castString(ffi.Array<span style=color:#f92672>&lt;</span>ffi.Char<span style=color:#f92672>&gt;</span> array) {
+</span></span><span style=display:flex><span>  <span style=color:#75715e>// 1. read array to list
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  List<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>int</span><span style=color:#f92672>&gt;</span> utf8List <span style=color:#f92672>=</span> <span style=color:#f92672>&lt;</span><span style=color:#66d9ef>int</span><span style=color:#f92672>&gt;</span>[];
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>int</span> len <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>do</span> {
+</span></span><span style=display:flex><span>    utf8List.add(array[len]);
+</span></span><span style=display:flex><span>    len<span style=color:#f92672>++</span>;
+</span></span><span style=display:flex><span>  } <span style=color:#66d9ef>while</span> (len <span style=color:#f92672>&lt;=</span> <span style=color:#ae81ff>64</span> <span style=color:#f92672>&amp;&amp;</span> array[len] <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span>);
+</span></span><span style=display:flex><span>  utf8List.add(<span style=color:#ae81ff>0x00</span>); <span style=color:#75715e>// add &#39;\0&#39;, end the string
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>// 2. alloc memory for string list
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>final</span> Pointer<span style=color:#f92672>&lt;</span>Uint8<span style=color:#f92672>&gt;</span> ptr <span style=color:#f92672>=</span> calloc(utf8List.length);
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>final</span> Uint8List list <span style=color:#f92672>=</span> ptr.asTypedList(utf8List.length);
+</span></span><span style=display:flex><span>  list.setAll(<span style=color:#ae81ff>0</span>, utf8List);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>// 3. cast utf8 pointer to string
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>final</span> Pointer<span style=color:#f92672>&lt;</span>Utf8<span style=color:#f92672>&gt;</span> utf8 <span style=color:#f92672>=</span> ptr.cast<span style=color:#f92672>&lt;</span>Utf8<span style=color:#f92672>&gt;</span>();
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>String</span> retString <span style=color:#f92672>=</span> utf8.toDartString();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  calloc.free(ptr);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> retString;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p><code>二进制数组赋值</code></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>var</span> data <span style=color:#f92672>=</span> [<span style=color:#ae81ff>0x01</span>, <span style=color:#ae81ff>0x03</span>, <span style=color:#ae81ff>0x05</span>, <span style=color:#ae81ff>0x07</span>];
+</span></span><span style=display:flex><span><span style=color:#66d9ef>final</span> ffi.Pointer<span style=color:#f92672>&lt;</span>ffi.Char<span style=color:#f92672>&gt;</span> dataPointer <span style=color:#f92672>=</span> calloc.allocate<span style=color:#f92672>&lt;</span>ffi.Char<span style=color:#f92672>&gt;</span>(<span style=color:#ae81ff>4</span>);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>var</span> i <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; i <span style=color:#f92672>&lt;</span> data.length; i<span style=color:#f92672>++</span>) {
+</span></span><span style=display:flex><span>  dataPointer.elementAt(i).value <span style=color:#f92672>=</span> data[i];
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=10-数据安全>10. 数据安全</h2><h3 id=101-静态编码安全>10.1. 静态编码安全</h3><p>在软件中往往会出现key等静态编码的字符串信息，如果直接在代码中硬编码，即使你做了混淆也很简单就能被找到。我们得通过复杂一些的手段来保护我的静态字符串。</p><p>我们使用 <a href=https://pub.dev/packages/envied_generator target=_blank>envied_generator | Dart package</a>
+库使用环境变量生成混淆后的字符串编码。</p><p>在项目根目录下创建 .env 文件写入你的静态字符串：</p><pre tabindex=0><code>SECURE_KEY = &#34;your_key&#34;
+</code></pre><p>在 lib 目录里创建 <code>env/env.dart</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>import</span> <span style=color:#e6db74>&#39;package:envied/envied.dart&#39;</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>part</span> <span style=color:#e6db74>&#39;env.g.dart&#39;</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>@</span>Envied(path: <span style=color:#e6db74>&#39;.env&#39;</span>)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>abstract</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Env</span> {
+</span></span><span style=display:flex><span>  <span style=color:#960050;background-color:#1e0010>@</span>EnviedField(varName: <span style=color:#e6db74>&#39;SECURE_KEY&#39;</span>, obfuscate: <span style=color:#66d9ef>true</span>)
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>String</span> secureKey <span style=color:#f92672>=</span> _Env.secureKey;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>执行命令生成 <code>env.g.dart</code>:</p><pre><code>flutter pub run build_runner build --delete-conflicting-outputs
+</code></pre><p>在需要使用字符串的地方通过Env类使用：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>final</span> key <span style=color:#f92672>=</span> Env.secureKey;
+</span></span></code></pre></div><p>编译时，对代码进行混淆：</p><pre><code>flutter build windows --release --obfuscate --split-debug-info=symbols
+</code></pre><h3 id=102-动态信息安全存储>10.2. 动态信息安全存储</h3><p>使用 <a href=https://pub.dev/packages/flutter_secure_storage target=_blank>flutter_secure_storage | Flutter package</a>
+库访问windows的安全存储区，可以用来安全存储运行中产生或者获得的信息。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dart data-lang=dart><span style=display:flex><span><span style=color:#66d9ef>final</span> secureStorage <span style=color:#f92672>=</span> FlutterSecureStorage();
+</span></span><span style=display:flex><span>secureStorage.write(key: <span style=color:#e6db74>&#34;your_key&#34;</span>, value: <span style=color:#e6db74>&#34;your_secure_value&#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>final</span> value <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> secureStorage.read(key: <span style=color:#e6db74>&#34;your_key&#34;</span>);
+</span></span><span style=display:flex><span>secureStorage.delete(key: <span style=color:#e6db74>&#34;your_key&#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#75715e>// If containsKey always return true, use follow codes.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>if</span>(<span style=color:#66d9ef>await</span> secureStorage.read(key: acc_flag) <span style=color:#f92672>!=</span> <span style=color:#66d9ef>null</span>){
+</span></span><span style=display:flex><span>  ...
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=11-一些坑点>11. 一些坑点</h2><h3 id=111-dart的路径>11.1. Dart的路径</h3><p>Dart由于是一个老语言被Flutter挖坟给挖出来重新动手术打扮成了新的样子，众所周知的是Dart 3 和以前完全是两个语言。但是，一些垃圾还是留在了里面。其中之一就是，不要相信Dart给你的任何路径字符串，它在比较长的情况下会对其进行省略缩写，所以用路径字符串拼接前，请使用纯净的路径。</p><p>下面提供了一个FileSystemEntity的拓展方法 <code>purifyPath</code>:</p><pre tabindex=0><code>extension FileSystemEntityExt on FileSystemEntity {
+  String purifyPath() {
+    try {
+      return getLongPathName(this.absolute.path);
+    } catch (error) {
+      plogger.e(error);
+      return this.absolute.path;
+    }
+  }
+}
+
+const MAX_PATH = 260;// windows路径最大长度限制
+
+String getLongPathName(String shortPath) {
+  return using&lt;String&gt;((arena) {
+    Pointer&lt;Utf16&gt; nativeValue = shortPath.toNativeUtf16();
+    final buffer = wsalloc(MAX_PATH);
+    final result = GetLongPathName(nativeValue, buffer, MAX_PATH);
+
+    if (result == 0) {
+      GetLastError();
+      throw Exception(&#39;Failed to get LongPathName: error 0x${result.toRadixString(16)}&#39;);
+    }
+
+    return buffer.toDartString();
+  });
+}
+</code></pre><h3 id=112-获取appdata路径>11.2. 获取AppData路径</h3><p>由于 Dart 的金主 Flutter 的桌面端是一个私生子，所以很多桌面端的东西都是不全的。如果你想要访问系统的各种路径，抱歉没有提供直接可用的，得自己想办法。</p><p>比如，获取AppData路径:</p><pre tabindex=0><code>// 方法1：从系统环境变量中获取
+final localAppData = Platform.environment[&#39;LOCALAPPDATA&#39;];
+
+// 方法2：用 path_provider 库
+import &#39;package:path_provider/path_provider.dart&#39;;
+var tempDic = await getTemporaryDirectory();
+final path = tempDic.purifyPath();// purifyPath 见上面小节
+
+final index = path.lastIndexOf(&#39;Temp&#39;);
+appDataPath = path.substring(0, index - 1);
+</code></pre></section></article></div><div x-data=tocHighlighter() @scroll.window=debouncedScroll class="hidden lg:flex lg:flex-col lg:items-end"></div></div><footer class="flex justify-between items-center gap-2 px-4 py-12"><div><p>© 2025 若烟阁</p><p class=text-sm>🌱
+<span class=text-base-content/60>Powered by <a class=hover:underline href=https://gohugo.io/ target=_blank>Hugo</a> with theme
+<a class=hover:underline href=https://github.com/g1eny0ung/hugo-theme-dream target=_blank>Dream</a>.</span></p></div><div x-data="{ icons: [
+    { name: 'sunny', status: 'n' },
+    { name: 'moon', status: 'y' },
+    { name: 'desktop', status: 'auto' }
+  ] }" class="flex items-center gap-2 h-[32px] px-2 bg-base-100 border border-base-content/30 rounded-full"><template x-for="icon in icons"><div role=button tabindex=0 :aria-label="'Select ' + icon.name + ' mode'" class="group inline-flex justify-center items-center p-1 rounded-full cursor-pointer hover:bg-primary" :class="$store.darkMode.icon() === icon.name && 'bg-primary'" @click=$store.darkMode.toggle(icon.status)><ion-icon :name="`${icon.name}-outline`" class=group-hover:text-primary-content :class="$store.darkMode.icon() === icon.name && 'text-primary-content'"></ion-icon></div></template></div></footer></div></div><div class=back><div class=container><div class="dream-grid dream-grid-about"><div class="w-full md:w-1/2 lg:w-1/3 xl:w-1/4 p-4 dream-column"><article class="card bg-base-100 hover:bg-base-content/10 shadow-xl dark:border dark:border-base-content/30"><div class=card-body><div class=card-title>Me</div><div class="prose dark:prose-invert"><p>It&rsquo;s me, It&rsquo;s all.</p></div></div></article></div></div><footer class="flex justify-between items-center gap-2 px-4 py-12"><div><p>© 2025 若烟阁</p><p class=text-sm>🌱
+<span class=text-base-content/60>Powered by <a class=hover:underline href=https://gohugo.io/ target=_blank>Hugo</a> with theme
+<a class=hover:underline href=https://github.com/g1eny0ung/hugo-theme-dream target=_blank>Dream</a>.</span></p></div><div x-data="{ icons: [
+    { name: 'sunny', status: 'n' },
+    { name: 'moon', status: 'y' },
+    { name: 'desktop', status: 'auto' }
+  ] }" class="flex items-center gap-2 h-[32px] px-2 bg-base-100 border border-base-content/30 rounded-full"><template x-for="icon in icons"><div role=button tabindex=0 :aria-label="'Select ' + icon.name + ' mode'" class="group inline-flex justify-center items-center p-1 rounded-full cursor-pointer hover:bg-primary" :class="$store.darkMode.icon() === icon.name && 'bg-primary'" @click=$store.darkMode.toggle(icon.status)><ion-icon :name="`${icon.name}-outline`" class=group-hover:text-primary-content :class="$store.darkMode.icon() === icon.name && 'text-primary-content'"></ion-icon></div></template></div></footer></div></div></div></div><script>window.lightTheme=null,window.darkTheme=null</script><script src=https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin=anonymous></script><script src=https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin=anonymous></script><script src=/blog/js/grid.min.js></script><script src=/blog/js/main.min.js></script><script src=/blog/js/toc.min.js></script><script type=module src=https://cdn.jsdelivr.net/npm/ionicons@7.4.0/dist/ionicons/ionicons.esm.js integrity="sha256-/IFmi82bIhdYWctu0UddSlJqpnzWm7Vh2C4CM32wF/k=" crossorigin=anonymous></script><script nomodule src=https://cdn.jsdelivr.net/npm/ionicons@7.4.0/dist/ionicons/ionicons.js integrity="sha256-mr7eJMX3VC3F7G32mk4oWp1C6a2tlMYxUdptfT7uKI8=" crossorigin=anonymous></script></body></html>
