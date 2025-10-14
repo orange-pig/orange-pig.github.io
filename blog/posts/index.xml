@@ -1,4 +1,84 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on 若烟阁</title><link>https://orange-pig.github.io/blog/posts/</link><description>Recent content in Posts on 若烟阁</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Tue, 14 Oct 2025 16:45:10 +0800</lastBuildDate><atom:link href="https://orange-pig.github.io/blog/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Mockjs 实践用法</title><link>https://orange-pig.github.io/blog/posts/mockjs-%E5%AE%9E%E8%B7%B5%E7%94%A8%E6%B3%95/</link><pubDate>Tue, 14 Oct 2025 16:45:10 +0800</pubDate><guid>https://orange-pig.github.io/blog/posts/mockjs-%E5%AE%9E%E8%B7%B5%E7%94%A8%E6%B3%95/</guid><description>&lt;p&gt;网上教程很多，但大多都是官网的照搬和堆砌，作者认为对于使用者来说，往往看了教程后，所学却不足以解决实际中的各种问题。所以本文介绍Mockjs的一些实践的用法，希望能帮助读者解决实际问题。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on 若烟阁</title><link>https://orange-pig.github.io/blog/posts/</link><description>Recent content in Posts on 若烟阁</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Tue, 14 Oct 2025 16:48:07 +0800</lastBuildDate><atom:link href="https://orange-pig.github.io/blog/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Flutter in Windows Desktop 工程实践</title><link>https://orange-pig.github.io/blog/posts/flutter-in-windows-desktop-%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/</link><pubDate>Tue, 14 Oct 2025 16:48:07 +0800</pubDate><guid>https://orange-pig.github.io/blog/posts/flutter-in-windows-desktop-%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/</guid><description>&lt;p&gt;Flutter虽然在Windows桌面端发力，也发布了正式版。但是，其开发重心仍然在移动端上。和其他成熟的桌面端框架比起来，Flutter还像个小孩子，从设计理念和环境生态很多地方都还是一个小学僧的状态。&lt;/p&gt;
+&lt;p&gt;本文为笔者在Windows桌面端程序开发中实际的工程化经验汇总，包含单进程应用、托盘化、命令行参数、设置exe文件的应用信息、打包依赖库、ffi、硬编码数据安全等章节，欢迎留言讨论。&lt;/p&gt;
+&lt;h2 id="1-实现单进程应用"&gt;1. 实现单进程应用&lt;/h2&gt;
+&lt;p&gt;在windows上单进程我们通常使用互斥量(Mutex)来实现单进程的判断，但是由于dart的基础库对于windows的支撑除了ffi几近于无。又由于dart是单线程模式，所以它社区有一个Mutex库，但是只是单线程内在异步场景使用的。所以，想要通过dart来实现标准的单进程程序在长期来看也是不可能的事情。&lt;/p&gt;
+&lt;p&gt;那么，我们将目光转向Flutter的runner层，其中 &lt;code&gt;windows\runner\win32_window.cpp&lt;/code&gt;这个文件负责实现windows窗口的创建、显示和销毁等。&lt;/p&gt;
+&lt;p&gt;我们在其中&lt;code&gt;Create&lt;/code&gt;方法中加入代码，完整函数代码如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-cpp" data-lang="cpp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;#include&lt;/span&gt; &lt;span style="color:#75715e"&gt;&amp;#34;synchapi.h&amp;#34;&lt;/span&gt;&lt;span style="color:#75715e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// others code
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;HANDLE hMutexHandle;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;bool&lt;/span&gt; Win32Window&lt;span style="color:#f92672"&gt;::&lt;/span&gt;Create(&lt;span style="color:#66d9ef"&gt;const&lt;/span&gt; std&lt;span style="color:#f92672"&gt;::&lt;/span&gt;wstring&lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt; title,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;const&lt;/span&gt; Point&lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt; origin,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;const&lt;/span&gt; Size&lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt; size) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Destroy();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; hMutexHandle &lt;span style="color:#f92672"&gt;=&lt;/span&gt; CreateMutex(NULL, TRUE, &lt;span style="color:#e6db74"&gt;L&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;mutex.my.app&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (hMutexHandle &lt;span style="color:#f92672"&gt;==&lt;/span&gt; NULL) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; printf(&lt;span style="color:#e6db74"&gt;&amp;#34;CreateMutex error: %d&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;\n&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;&lt;/span&gt;, GetLastError());
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; false;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; DWORD errorCode &lt;span style="color:#f92672"&gt;=&lt;/span&gt; GetLastError();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (errorCode &lt;span style="color:#f92672"&gt;==&lt;/span&gt; ERROR_INVALID_HANDLE) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; printf(&lt;span style="color:#e6db74"&gt;&amp;#34;Mutex name be used.&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; false;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;else&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;if&lt;/span&gt; (errorCode &lt;span style="color:#f92672"&gt;==&lt;/span&gt; ERROR_ALREADY_EXISTS) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; printf(&lt;span style="color:#e6db74"&gt;&amp;#34;Mutex name already exists.&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Destroy();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 这个FindWindowA的方法有个bug，
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 如果打开了一个资源管理器的文件目录和应用同名，那么它可能会找到这个资源管理器。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; &lt;span style="color:#75715e"&gt;// HWND handle = FindWindowA(NULL, &amp;#34;My App&amp;#34;);
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 所以我们通过进程名来获取其主窗口的句柄
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; &lt;span style="color:#75715e"&gt;// 因为flutter是单页应用只有一个窗口，所以只要获取窗口句柄不用区分就认为是主窗口
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; &lt;span style="color:#75715e"&gt;// Get process id by process execute name
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; DWORD dwProcessId &lt;span style="color:#f92672"&gt;=&lt;/span&gt; GetProcessIdByName(TEXT(&lt;span style="color:#e6db74"&gt;&amp;#34;PICStudio.exe&amp;#34;&lt;/span&gt;));
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (dwProcessId &lt;span style="color:#f92672"&gt;==&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; printf(&lt;span style="color:#e6db74"&gt;&amp;#34;Process not found!&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; false;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Get window handle by process id
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; HWND handle &lt;span style="color:#f92672"&gt;=&lt;/span&gt; GetMainWindowHandle(dwProcessId);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (handle &lt;span style="color:#f92672"&gt;==&lt;/span&gt; NULL)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; printf(&lt;span style="color:#e6db74"&gt;&amp;#34;Main window not found!&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; false;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; WINDOWPLACEMENT place &lt;span style="color:#f92672"&gt;=&lt;/span&gt; { &lt;span style="color:#66d9ef"&gt;sizeof&lt;/span&gt;(WINDOWPLACEMENT) };
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; GetWindowPlacement(handle, &lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt;place);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;switch&lt;/span&gt; (place.showCmd)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;case&lt;/span&gt; SW_SHOWMAXIMIZED:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 错误用法：ShowWindow(handle, SW_SHOWMAXIMIZED);
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt; SendMessage(handle, WM_SYSCOMMAND, SW_SHOWMAXIMIZED, NULL);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;break&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;case&lt;/span&gt; SW_SHOWMINIMIZED:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; SendMessage(handle, WM_SYSCOMMAND, SW_RESTORE, NULL);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;break&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;default&lt;/span&gt;&lt;span style="color:#f92672"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (IsWindowVisible(handle))
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; SendMessage(handle, WM_SYSCOMMAND, SW_NORMAL, NULL);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;else&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; SendMessage(handle, WM_SYSCOMMAND, SC_RESTORE, NULL);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;break&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; SetForegroundWindow(handle);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; false;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// others code
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;&lt;/span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其中，通过&lt;code&gt;CreateMutex&lt;/code&gt;win32 api来创建有名称的全局互斥量。如果互斥量已经被人使用了，则&lt;code&gt;GetLastError&lt;/code&gt;方法就会获取到&lt;code&gt;ERROR_ALREADY_EXISTS&lt;/code&gt;值。&lt;/p&gt;</description></item><item><title>Mockjs 实践用法</title><link>https://orange-pig.github.io/blog/posts/mockjs-%E5%AE%9E%E8%B7%B5%E7%94%A8%E6%B3%95/</link><pubDate>Tue, 14 Oct 2025 16:45:10 +0800</pubDate><guid>https://orange-pig.github.io/blog/posts/mockjs-%E5%AE%9E%E8%B7%B5%E7%94%A8%E6%B3%95/</guid><description>&lt;p&gt;网上教程很多，但大多都是官网的照搬和堆砌，作者认为对于使用者来说，往往看了教程后，所学却不足以解决实际中的各种问题。所以本文介绍Mockjs的一些实践的用法，希望能帮助读者解决实际问题。&lt;/p&gt;
 &lt;h2 id="安装和入门"&gt;安装和入门&lt;/h2&gt;
 &lt;p&gt;请认真阅读&lt;a href="https://github.com/nuysoft/Mock/wiki"&gt;官方教程&lt;/a&gt;。&lt;/p&gt;
 &lt;blockquote&gt;
