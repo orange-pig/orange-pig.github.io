@@ -1,0 +1,846 @@
+<!doctype html><html lang=zh-CN x-data :class=$store.darkMode.class() :data-theme=$store.darkMode.theme()><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>2025是时候从Windows转到ArchLinux了——windows+linux双系统配置实录 | 若烟阁</title><link rel=canonical href=https://orange-pig.github.io/blog/posts/system/2025%E6%98%AF%E6%97%B6%E5%80%99%E4%BB%8Ewindows%E8%BD%AC%E5%88%B0archlinux%E4%BA%86windows+linux%E5%8F%8C%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE%E5%AE%9E%E5%BD%95/><meta name=author content="鱼人小野"><meta name=description content="这里写摘要
+"><meta name=keywords content="System,Linux,Arch,Windows,双系统"><meta name=generator content="Hugo 0.151.0"><meta property="og:url" content="https://orange-pig.github.io/blog/posts/system/2025%E6%98%AF%E6%97%B6%E5%80%99%E4%BB%8Ewindows%E8%BD%AC%E5%88%B0archlinux%E4%BA%86windows+linux%E5%8F%8C%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE%E5%AE%9E%E5%BD%95/"><meta property="og:site_name" content="若烟阁"><meta property="og:title" content="2025是时候从Windows转到ArchLinux了——windows+linux双系统配置实录"><meta property="og:description" content="这里写摘要"><meta property="og:locale" content="zh_CN"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2025-10-15T14:57:04+08:00"><meta property="article:modified_time" content="2025-10-15T14:57:04+08:00"><meta property="article:tag" content="System"><meta property="article:tag" content="Linux"><meta property="article:tag" content="Arch"><meta property="article:tag" content="Windows"><meta property="article:tag" content="双系统"><meta property="og:image" content="https://orange-pig.github.io/blog/posts/system/2025%E6%98%AF%E6%97%B6%E5%80%99%E4%BB%8Ewindows%E8%BD%AC%E5%88%B0archlinux%E4%BA%86windows+linux%E5%8F%8C%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE%E5%AE%9E%E5%BD%95/cover.png"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://orange-pig.github.io/blog/posts/system/2025%E6%98%AF%E6%97%B6%E5%80%99%E4%BB%8Ewindows%E8%BD%AC%E5%88%B0archlinux%E4%BA%86windows+linux%E5%8F%8C%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE%E5%AE%9E%E5%BD%95/cover.png"><meta name=twitter:title content="2025是时候从Windows转到ArchLinux了——windows+linux双系统配置实录"><meta name=twitter:description content="这里写摘要"><link rel=stylesheet href=/blog/css/output.min.css><style>pre{padding:1em;overflow:auto}</style><script defer src=https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js integrity="sha256-4EHxtjnR5rL8JzbY12OKQJr81ESm7JBEb49ORPo29AY=" crossorigin=anonymous></script></head><body x-data="{
+    flip: false,
+  }"><div id=dream-global-bg></div><nav class="mt-4 lg:mt-8 py-4"><div class="container flex justify-between px-4"><section class="flex items-center gap-4"><div class="avatar cursor-pointer hover:avatar-online" @click="flip = !flip" title=翻转一下！><div class="h-10 rounded-full"><img src=/blog/img/avatar.jpg alt=若烟阁></div></div><div><a href=https://orange-pig.github.io/blog/ class="text-lg font-semibold cursor-pointer">若烟阁</a><div class="text-base-content/60 text-sm">知识浩瀚若烟，或有一瓢。不欲充数泛滥，凝练真知灼见</div></div></section><div class="dropdown dropdown-end sm:hidden"><div tabindex=0 role=button class="btn btn-ghost btn-square" aria-label="Select an option"><ion-icon name=menu class=text-2xl></ion-icon></div><ul tabindex=0 class="dropdown-content menu w-36 bg-base-100 rounded-box z-1 shadow-md"><li><div role=link tabindex=0 class="inline-flex items-center p-2 cursor-pointer" @click="flip = !flip" title=关于><ion-icon name=information-circle></ion-icon>关于</div></li><li><a class="inline-flex items-center p-2 cursor-pointer" href=/blog/posts title=归档><ion-icon name=archive></ion-icon>归档</a></li><li><a class="inline-flex items-center p-2 cursor-pointer" href=/blog/categories title=所有分类><ion-icon name=grid></ion-icon>所有分类</a></li><li><a class="inline-flex items-center p-2 cursor-pointer" href=/blog/tags title=所有标签><ion-icon name=pricetags></ion-icon>所有标签</a></li></ul></div><section class="hidden sm:flex sm:items-center sm:gap-2 md:gap-4"><div role=link tabindex=0 class="text-sm font-semibold cursor-pointer hover:underline" @click="flip = !flip" title=关于>关于</div><a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href=/blog/posts title=归档><ion-icon class=group-hover:text-primary-content name=archive></ion-icon></a><a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href=/blog/categories title=所有分类><ion-icon class=group-hover:text-primary-content name=grid></ion-icon></a><a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href=/blog/tags title=所有标签><ion-icon class=group-hover:text-primary-content name=pricetags></ion-icon></a></section></div></nav><div class=flip-container :class="{ 'flip-it': flip }"><div class=flipper><div class=front><div class=container><div class="lg:grid lg:grid-cols-4 gap-4 mt-4 px-4"><div class="hidden lg:block"></div><div class=lg:col-span-2><article class="mx-auto prose prose-quoteless dark:prose-invert" id=dream-single-post-main itemscope itemtype=http://schema.org/Article><meta itemprop=name content="2025是时候从Windows转到ArchLinux了——windows+linux双系统配置实录"><meta itemprop=description content="这里写摘要"><meta itemprop=datePublished content="2025-10-15T14:57:04+08:00"><meta itemprop=dateModified content="2025-10-15T14:57:04+08:00"><meta itemprop=wordCount content="2156"><meta itemprop=image content="https://orange-pig.github.io/blog/posts/system/2025%E6%98%AF%E6%97%B6%E5%80%99%E4%BB%8Ewindows%E8%BD%AC%E5%88%B0archlinux%E4%BA%86windows+linux%E5%8F%8C%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE%E5%AE%9E%E5%BD%95/cover.png"><meta itemprop=keywords content="System,Linux,Arch,Windows,双系统"><header><h1 itemprop=headline>2025是时候从Windows转到ArchLinux了——windows+linux双系统配置实录</h1><p class=text-sm>星期三, 10月 15, 2025
+| <span>11分钟阅读</span>
+| <span>更新于
+星期三, 10月 15, 2025</span></p><div class="flex justify-between"><div class="flex items-center"><span>@</span>
+<span itemprop=author itemscope itemtype=https://schema.org/Person><span itemprop=name>鱼人小野</span></span></div><div class="flex items-center gap-2"><a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href="https://x.com/intent/post?text=2025%e6%98%af%e6%97%b6%e5%80%99%e4%bb%8eWindows%e8%bd%ac%e5%88%b0ArchLinux%e4%ba%86%e2%80%94%e2%80%94windows+linux%e5%8f%8c%e7%b3%bb%e7%bb%9f%e9%85%8d%e7%bd%ae%e5%ae%9e%e5%bd%95&amp;url=https://orange-pig.github.io/blog/posts/system/2025%E6%98%AF%E6%97%B6%E5%80%99%E4%BB%8Ewindows%E8%BD%AC%E5%88%B0archlinux%E4%BA%86windows+linux%E5%8F%8C%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE%E5%AE%9E%E5%BD%95/" target=_blank rel="noopener noreferrer" title="Share on X"><ion-icon class=group-hover:text-primary-content name=logo-x></ion-icon></a><a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href="https://facebook.com/sharer/sharer.php?u=https://orange-pig.github.io/blog/posts/system/2025%E6%98%AF%E6%97%B6%E5%80%99%E4%BB%8Ewindows%E8%BD%AC%E5%88%B0archlinux%E4%BA%86windows+linux%E5%8F%8C%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE%E5%AE%9E%E5%BD%95/" target=_blank rel="noopener noreferrer" title="Share on Facebook"><ion-icon class=group-hover:text-primary-content name=logo-facebook></ion-icon></a><a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href="https://wa.me/?text=2025%e6%98%af%e6%97%b6%e5%80%99%e4%bb%8eWindows%e8%bd%ac%e5%88%b0ArchLinux%e4%ba%86%e2%80%94%e2%80%94windows+linux%e5%8f%8c%e7%b3%bb%e7%bb%9f%e9%85%8d%e7%bd%ae%e5%ae%9e%e5%bd%95%20https://orange-pig.github.io/blog/posts/system/2025%E6%98%AF%E6%97%B6%E5%80%99%E4%BB%8Ewindows%E8%BD%AC%E5%88%B0archlinux%E4%BA%86windows+linux%E5%8F%8C%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE%E5%AE%9E%E5%BD%95/" target=_blank rel="noopener noreferrer" title="Share on WhatsApp"><ion-icon class=group-hover:text-primary-content name=logo-whatsapp></ion-icon></a></div></div></header><section id=dream-single-post-content itemprop=articleBody><p>这里写摘要</p><h2 id=准备>准备</h2><p>在 windows 系统中做好安装准备</p><ol><li><p>下载arch linux的镜像，官网是bt下载，我们从国内的镜像源下载</p><p><a href=https://mirrors.tuna.tsinghua.edu.cn/ target=_blank>清华大学镜像站</a>
+ISO： <a href=https://mirrors.tuna.tsinghua.edu.cn/archlinux/iso target=_blank>https://mirrors.tuna.tsinghua.edu.cn/archlinux/iso</a></p><p>获取hash(powershell)</p><pre tabindex=0><code>&gt; get-filehash [filepath]
+</code></pre><p>对比hash(SHA256):</p><pre tabindex=0><code>&gt; &#39;4b1af44dbeed97acec0204a95f6393818bb8fd903b423a20b7ea141f80b27e59&#39; -eq &#39;4b1af44dbeed97acec0204a95f6393818bb8fd903b423a20b7ea141f80b27e59&#39; 
+</code></pre></li><li><p>烧录启动盘，用rufus</p><p>参数默认，仅分区类型改为GPT</p></li><li><p>win+x+k 磁盘管理器，准备一个未格式化的卷</p></li><li><p>进入Bios关闭 【安全启动】，并置顶U盘启动</p><p>（根据电脑主板不同自行搜索U盘启动启动方式）</p></li><li><p>重启</p></li></ol><h2 id=安装os>安装OS</h2><ol><li><p>启动后进入进入安装程序，显示如下：</p><p><code>root@archiso></code></p></li><li><p>连接wifi（如果你的网卡是linux支持的话，不然请插线）</p><p>输入 iwctl 进入联网程序</p><pre tabindex=0><code>[iwd]# station list # 查询网卡
+[iwd]# station wlan0 get-networks  # 获取网卡wlan0的wifi列表
+[iwd]# station wlan0 connect [wifi-name]
+Passphrase: [wifi-pwd] # 输入密码链接wifi
+[iwd]# exit # 退出程序
+</code></pre></li><li><p>更新arch</p><pre tabindex=0><code>&gt; pacman -Sy archlinux-keyring # 更新密钥
+&gt; pacman -Sy archinstall # 安装或更新 archinstall
+</code></pre></li><li><p>进入archinstall安装脚本</p><pre tabindex=0><code>&gt; archinstall
+</code></pre><p>操作选项顺序如下</p><pre tabindex=0><code>Archinstall language -&gt; English(default) # 其他的会乱码
+Locales -&gt; default
+Mirrors and repositories
+    -&gt; Select regions -&gt; China
+    -&gt; Optional repositories -&gt; multilib (开启32位源，支持steam等)
+    -&gt; Back
+Disk configuration
+    -&gt; Partitioning 
+        -&gt; Manual Partitioning # 双系统可能不是单独的盘安装，自动分区会格式化硬盘，选择手动
+            选择要安装的盘 Enter
+            选择预留的free空间 Enter
+            1024MB + fat32 + /boot # 创建启动分区
+            再次选择剩余的free空间 Enter
+            32768MB + linux-swep  # 创建交换分区，小的内容4G，一般设置8G，如果想要睡眠设置与物理内存一致
+            再次选择剩余的free空间 Enter
+            不填空白 Enter 默认使用剩下所有空间 + btrfs
+            在列表中选择刚创建的btrfs分区 Enter
+                -&gt; Mark/Unmark as compressed Enter
+                -&gt; Set subvolumes
+                    -&gt; Add subvolume
+                        @       /
+                        @home   /home
+                    -&gt; Comfirm and exit
+            -&gt; Comfirm and exit
+    -&gt; Back
+Swap # 设置内存压缩，不论是swap文件还是swap分区都可以用到这层压缩机制
+    -&gt; Enabled
+Bootloader
+    -&gt; Grub
+Hostname
+    # 自己取名
+Root password
+    # 自己设置root用户密码
+User account
+    -&gt; Add a user
+        username: # 自己取名
+        password: # 自己设置
+        sudo: Yes
+    -&gt; Comfirm and exit
+Profile
+    -&gt; Type
+        -&gt; Desktop
+            KDE Plasma -&gt; plasma-meta konsole kate dolphin ark plasma-workspace
+            或者：
+            hyprland -&gt; hyprland dunst kitty uwsm dolphin wofi xdg-desktop-portal-hyprland qt5-wayland qt6-wayland polkit-kde-agent grim slurp
+            # 建议新手选择KDE，hyprland配置麻烦，使用方式与windows差别巨大，适合比较熟悉linux系统后，想要折腾骚气的桌面的朋友
+    -&gt; Graphics driver
+        选择你自己的驱动
+Audio
+    pipewire
+Kernel
+    linux(default)
+Network configuration
+    Use NetworkManager
+Additional packages
+    # 自选安装包， / 搜索，Tab 选中，注意 Enter会直接选中当前选项并退出，所以尽量不要选错，取消很麻烦
+    # 软件分组列表：https://archlinux.org/groups/
+    vim
+    os-prober
+    btrfs-progs
+    linux-lts-headers(intel) or: linux-zen-headers(amd zen4)
+Timezone
+    # 设置时区， / 搜索
+    Asia/chongqing
+Automatic time sync
+    (default)
+install # 等待安装完成
+Reboot system # 重启系统
+</code></pre></li><li><p>进入bios，配置启动顺序</p><p>启动设置：将新的系统分区引导置顶</p></li><li><p>设置双系统引导</p><p>登录进入KDE桌面</p><p>快捷键 alt+space 搜索 <code>terminal</code>，打开默认终端 konsole</p><pre tabindex=0><code>$ sudo su
+</code></pre><p>查看分区</p><pre tabindex=0><code># lsblk # 查看分区大小信息
+# lsblk -pf # 查看分区和盘符的层级关系
+</code></pre><p>找到自己的windows的引导分区名称，举例： /dev/nvme1n1p1</p><p>挂载它：</p><pre tabindex=0><code># mount --mkdir /dev/nvme1n1p1 /mnt/winboot
+# os-prober # 检查是否成功
+</code></pre><p>配置引导：</p><pre tabindex=0><code># vim /etc/default/grub
+    最后一行关闭禁用开关：GRUB_DISABLE_OS_PROBER=false
+    修改启动项： GRUB_CMDLINE_LINUX_DEFAULT=&#34;loglevel=5 nowatchdog&#34; # 提升日志等级少写日志，关闭看门狗
+# grub-mkconfig -o /boot/grub/grub.cfg # 更新配置文件
+</code></pre></li><li><p>链接wifi</p><p>在右下角任务栏上链接wifi，跟windows类似</p></li><li><p>查看内核信息，完成</p><blockquote><p>uname -a</p></blockquote></li></ol><h2 id=配置软件仓库>配置软件仓库</h2><blockquote><p><a href=https://wiki.archlinuxcn.org/wiki/%E5%BB%BA%E8%AE%AE%E9%98%85%E8%AF%BB/%E4%B8%AD%E5%9B%BD%E7%94%A8%E6%88%B7%E7%9A%84%E6%8E%A8%E8%8D%90%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88 target=_blank>中国用户的推荐解决方案</a></p></blockquote><p><strong>官方仓库：</strong>
+core 作为构建完整CLI系统的最小集合
+extra 作为开发人员维护的软件集合
+介绍 <a href=https://wiki.archlinuxcn.org/wiki/%E5%AE%98%E6%96%B9%E4%BB%93%E5%BA%93 target=_blank>https://wiki.archlinuxcn.org/wiki/%E5%AE%98%E6%96%B9%E4%BB%93%E5%BA%93</a></p><p><strong>中文社区仓库（非官方仓库）：</strong>
+比官方仓库多了些国内软件
+介绍 <a href=https://wiki.archlinuxcn.org/wiki/Arch_Linux_%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA%E4%BB%93%E5%BA%93 target=_blank>https://wiki.archlinuxcn.org/wiki/Arch_Linux_%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA%E4%BB%93%E5%BA%93</a></p><p><strong>AUR（用户软件仓库）</strong>
+社区用户自发形成的软件仓库，不保证经过验证
+<a href=https://wiki.archlinuxcn.org/wiki/Arch_%E7%94%A8%E6%88%B7%E8%BD%AF%E4%BB%B6%E4%BB%93%E5%BA%93 target=_blank>https://wiki.archlinuxcn.org/wiki/Arch_%E7%94%A8%E6%88%B7%E8%BD%AF%E4%BB%B6%E4%BB%93%E5%BA%93</a></p><h4 id=1-安装基础工具>1. 安装基础工具</h4><pre><code>```
+$ sudo pacman -S --needed base-devel # install build base tools
+$ sudo pacman -S git
+```
+</code></pre><h4 id=2-配置中文社区仓库>2. 配置中文社区仓库</h4><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-/etc/pacman.conf data-lang=/etc/pacman.conf><span style=display:flex><span><span style=color:#66d9ef>[archlinuxcn]</span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#a6e22e>Server</span> <span style=color:#f92672>=</span> https://repo.archlinuxcn.org/$arch<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><pre tabindex=0><code>$ sudo pacman -Sy archlinuxcn-keyring
+$ sudo pacman -Su archlinuxcn-mirrorlist-git
+</code></pre><h4 id=3-安装-flatpak>3. 安装 flatpak</h4><pre><code>可以安装运行flatpak程序
+
+```
+$ sudo pacman -S flatpak
+```
+</code></pre><h4 id=4-安装-aur-tool>4. 安装 AUR tool</h4><pre><code>paru，也可以用yay
+
+```
+$ git clone https://aur.archlinux.org/paru.git
+$ cd paru
+$ makepkg -s
+$ makepkg -i
+$ makepkg --clean
+```
+
+注意：不建议配置国内AUR镜像，因为aur本身只是一个打包脚本的仓库，真实的软件下载源不在上面，打包也是在本地进行的，所以国内镜像意义不大
+
+因为AUR最近有很多DDos,所以当其不可访问的时候可以使用github镜像仓库自行编译安装。
+教程：https://wiki.archlinuxcn.org/wiki/Arch_%E7%94%A8%E6%88%B7%E8%BD%AF%E4%BB%B6%E4%BB%93%E5%BA%93#%E8%8E%B7%E5%8F%96%E8%BD%AF%E4%BB%B6%E5%8C%85%E6%9E%84%E5%BB%BA%E6%89%80%E9%9C%80%E6%96%87%E4%BB%B6
+</code></pre><h3 id=5-pacman-增强>5. pacman 增强</h3><p>安装 pacman-contrib 获得增强，包含 pactree 显示软件包的依赖，checkupdates 在不同步数据库的情况下检查软件包更新</p><pre tabindex=0><code>$ sudo pacm -S pacman-contrib
+</code></pre><p>用法：</p><pre tabindex=0><code>pactree [包名]
+checkupdates [包名]
+</code></pre><h2 id=系统本地化汉化>系统本地化(汉化)</h2><h4 id=安装unicode和中文字体><strong>安装Unicode和中文字体</strong></h4><pre><code>介绍和更多字体：https://wiki.archlinuxcn.org/wiki/%E5%AD%97%E4%BD%93
+</code></pre><p><code>安装Google字体族</code></p><pre><code>```
+$ sudo pacman -S noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra  # emoji字体字型只需要安装一种就可以了
+$ paru noto-fonts-sc  # Noto CJK-SC 简体中文字型，可能会因为网络问题下载失败
+```
+</code></pre><p><code>DejaVu字体族</code></p><pre><code>```
+$ sudo pacman -S ttf-dejavu  # 含衬线、无衬线、等宽字体
+```
+</code></pre><p><code>思源体</code></p><pre><code>```
+$ sudo pacman -S adobe-source-han-sans-cn-fonts adobe-source-han-serif-cn-fonts
+```
+</code></pre><p><code>文泉驿字型</code></p><pre><code>黑体、宋体等
+
+```
+$ sudo pacman -S wqy-microhei wqy-zenhei wqy-bitmapfont
+```
+</code></pre><p><code>Droid字体族</code></p><pre><code>```
+$ sudo pacman -S ttf-droid
+```
+</code></pre><p><code>颜文字</code></p><pre><code>```
+$ sudo pacman -S ttf-arphic-ukai
+$ sudo pacman -S ttf-arphic-uming
+$ sudo pacman -S gnu-free-fonts
+$ sudo pacman -S ttf-indic-otf
+```
+</code></pre><p><code>Serif(衬线)字体</code></p><pre><code>```
+$ sudo pacman -S ttf-linux-libertine
+```
+</code></pre><p><code>Sans(无衬线)字体</code></p><pre><code>```
+$ sudo pacman -S ttf-opensans
+```
+</code></pre><p><code>Monospace(等宽)字体</code></p><pre><code>等宽字体很多，按个人喜好安装
+
+```
+$ sudo pacman -S ttf-cascadia-code
+$ sudo pacman -S ttf-jetbrains-mono
+$ paru ttf-courier-prime
+```
+</code></pre><p><code>安装Windows字体(不推荐)</code></p><pre><code>不推荐原因：一些软件在windows上和linux上的默认字体是不同的，如果不是设计必须要用到指定字体的话，直接迁移windows上的字体可能会导致一些软件的字体显示不符合预期。
+
+选择安装Windows字体的话，就建议不安装其他任何linux字体。
+
+对于双系统最推荐的做法，就是吧C盘挂在到 /mnt/c 目录下
+
+```
+$ sudo fdisk -l  # 查看C盘的设备名称，一般就是叫“Microsoft 基本数据那个盘”，例如：/dev/nvme1n1p3
+$ sudo mount --mkdir /dev/nvme1n1p3 /mnt/c  # 挂载C盘到windows目录下
+```
+
+然后创建一个字体目录，复制字体过来并设置权限(比链接方式兼容性更好)
+
+```
+$ sudo mkdir /usr/local/share/fonts
+$ sudo mkdir /usr/local/share/fonts/WindowsFonts
+$ sudo cp /mnt/c/Windows/Fonts/* /usr/local/share/fonts/WindowsFonts
+$ sudo chmod 644 /usr/local/share/fonts/WindowsFonts/*
+```
+
+最后生成字体缓存
+
+```
+$ sudo fc-cache --force
+```
+
+其次，如果没有双系统的朋友，可以找一个windwos的系统或者ISO中的fonts复制过来放到下面路径中，然后与上面的步骤一致。
+
+/usr/local/share/fonts/WindowsFonts
+
+最不推荐的是，从AUR安装 ttf-ms-win10-auto 或 ttf-ms-win10 字体包，因为该字体包要不是下载一个windows安装镜像自动提取字体，要不就是需要你提供一个安装介质，后续还无法通过包更新，缺乏维护性。
+</code></pre><p><code>检查字体选择</code></p><pre tabindex=0><code>$ fc-match serif  # 检查默认的衬线字体
+$ fc-match sans-serif  # 检查默认的无衬线字体
+$ fc-match monospace  # 检查默认的等宽字体
+</code></pre><h4 id=系统汉化><strong>系统汉化</strong></h4><pre><code>本地化wiki： https://wiki.archlinuxcn.org/wiki/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87%E6%9C%AC%E5%9C%B0%E5%8C%96
+
+```
+$ sudo vim /etc/locale.gen
+```
+
+找到最后取消注释 
+```
+zh_CN.UTF-8 UTF-8
+```
+
+**生效配置**
+
+```
+$ sudo locale-gen
+```
+
+**配置中文为首选项（避免日语排在前面让一些文字显示为日文汉字）**
+
+```
+$ sudo vim /etc/locale.conf
+```
+
+```
+LANG=zh_CN.UTF-8
+```
+
+注意：可能会导致 TTY 中显示出豆腐块。
+
+在系统设置中选择中文，应用后重启
+</code></pre><h2 id=ime-输入法>IME 输入法</h2><h4 id=1-fcitx5最好用的输入法框架>1. Fcitx5(最好用的输入法框架)</h4><p>参考：https://wiki.archlinuxcn.org/zh-sg/Fcitx5</p><pre><code>```
+$ sudo pacman -S fcitx5-im  # 输入法包组，Fcitx5默认支持wayland
+```
+
+在 KDE Wayland 下配置：
+
+前往系统设置 &gt; 输入设备 &gt; 虚拟键盘，选择 Fcitx 5。
+
+问题检查：
+
+```
+$ fcitx5-diagnose
+```
+</code></pre><h4 id=2-使用拼音输入法引擎>2. 使用<strong>拼音输入法</strong>引擎</h4><pre><code>```
+$ sudo pacman -S fcitx5-chinese-addons
+```
+
+在配置中搜索 Input Method 添加输入法 Pinyin
+
+安装词库：
+
+```
+$ sudo pacman -S fcitx5-pinyin-zhwiki
+$ paru -S fcitx5-pinyin-sougou-dict-git
+$ paru -S fcitx5-pinyin-sougou-dict
+```
+
+开启云词汇（反应有点慢不推荐）：
+
+在输入法配置界面-&gt;配置附加组件-&gt;在输入法类别下拼音项后点击配置-&gt;勾选“启用云拼音”-&gt;应用配置
+</code></pre><h4 id=3-使用其他ime-engine--rime>3. 使用其他IME engine —— rime</h4><pre><code>```
+$ sudo pacman -S fcitx5-rime
+$ sudo pacman -S rime-ice-git  # 雾凇拼音
+```
+
+在配置中搜索 Input Method 添加输入法 Rime
+
+```
+$ mkdir ~/.local/share/fcitx5/
+$ mkdir ~/.local/share/fcitx5/rime/
+$ sudo vim ~/.local/share/fcitx5/rime/default.custom.yaml
+```
+</code></pre><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-default.custom.yaml data-lang=default.custom.yaml><span style=display:flex><span><span style=color:#f92672>patch</span>:
+</span></span><span style=display:flex><span>  <span style=color:#75715e># 仅使用「雾凇拼音」的默认配置，配置此行即可</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>__include</span>: <span style=color:#ae81ff>rime_ice_suggestion:/</span>
+</span></span></code></pre></div><pre><code>重新生成输入法配置
+
+```
+$ rm -rf ~/.local/share/fcitx5/rime/build/*  # 删除旧的配置文件，如果有的话
+$ fcitx5-remote -r  # 如果没效果，在输入法托盘图标上右键二级菜单选择“重新部署”
+```
+
+如果输入法没有启动成功，请检查 ~/.local/share/fcitx5/rime/ 目录下是否生成 build 目录。
+
+如果没有生成 build 目录，使用命令手动生成build
+
+```
+$ rime_deployer --build
+```
+
+如果生成失败，请查看 ~/.local/share/fcitx5/rime/ 目录的权限，如果权限为root，请修改权限后重新生成。
+</code></pre><h2 id=系统配置>系统配置</h2><h4 id=0-挂载c盘和d盘到系统中可选>0. 挂载C盘和D盘到系统中（可选）</h4><pre><code>&gt; ⚠️注意： 当你有多个硬盘的时候一定要使用KDE的分区管理工具挂载，并且选择UUID，因为TMD每次启动的分区名称可能会变，上一次是nvme1下次就是nvme0，开机后报错就对了
+
+(1) 安装ntfs的开源实现：
+
+    ```
+    $ paru -S ntfs-3g
+    ```
+
+(2) 查看磁盘分区情况，找到对应分区的UUID
+
+    ```
+    $ sudo fdisk -l
+    $ lsblk -f
+    ```
+    
+(3) 挂载
+ 
+    找到对应分区设备名称，一般建议挂载到 /mnt 中
+
+    ```
+    $ sudo mount --mkdir [c盘的分区UUID] /mnt/c
+    $ sudo mount --mkdir [d盘的分区UUID] /mnt/d
+    ```
+</code></pre><h4 id=1-拓展硬盘可选>1. 拓展硬盘（可选）</h4><pre><code>&gt; ⚠️注意： 当你有多个硬盘的时候一定要使用KDE的分区管理工具挂载，并且选择UUID，因为TMD每次启动的分区名称可能会变，上一次是nvme1下次就是nvme0，开机后报错就对了
+
+(1) 查看磁盘分区情况
+
+```
+$ sudo fdisk -l
+````
+
+(2) 选用cfdisk分区，它是 Terminal UI 的。 参考：https://wiki.archlinuxcn.org/wiki/Cfdisk
+
+    ```
+    $ cfdisk /dev/nvme1n1  # 编辑制定磁盘设备，名称以实际的为准
+    ```
+
+    a. 进入后，选择剩余空间
+    b. 选择新建，输入分区大小 Enter （默认为linux文件系统，如果需要可以选择类型更改）
+    c. 选择写入 Enter 在确认中输入 yes
+
+(3) 格式化创建文件系统
+    
+    参考：https://wiki.archlinuxcn.org/wiki/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F
+    
+    a. 查看文件系统和挂载信息，找到对应的分区名称和UUID
+        ```
+        $ lsblk -f
+        ```
+        
+    b. 创建文件系统
+        ```
+        $ mkfs.btrfs /dev/nvme1n1p3  # 对应的实际分区名称
+        ```
+ 
+(4) 挂载
+    ```
+    $ sudo mount --mkdir [分区的UUID] /data
+    $ sudo chown -R [username] /data/  # 修改权限为当前用户
+    ```
+ 
+(5) 自动挂载(可选)
+    
+    参考：https://wiki.archlinuxcn.org/zh-sg/Fstab
+    
+    安装KDE 的分区管理工具通过GUI配置
+
+    ```
+    $ sudo pacman -S partitionmanager
+    ```
+     
+    启动 KDE分区管理器，可能要先将前面的挂载卸载掉，然后重新挂载，挂载时默认是自动挂载，将会自动写入fatab中，开机启动挂载。
+
+    &gt; 提醒：一定要选择UUID
+
+    常见问题： KDE分区管理器设置的自动挂载，在开机自动挂载时会指定不可执行（noexec），即使你没有勾选不可执行
+    解决： 在挂载配置界面的选项行中，点击更多，输入：exec 
+</code></pre><h4 id=2-系统快照>2. 系统快照</h4><pre><code>btrfs 选择 Snapper, 其他的选 Timeshift.
+
+(1) 安装 Snapper
+
+```
+$ sudo pacman -S snapper
+```
+
+(2) 安装图形工具
+
+```
+$ paru -S btrfs-assistant
+```
+
+启动 btrfs-assistant 图形界面
+    a. 添加 snap setting 指定备份路径
+    b. 启动定时快照，设置 
+        ```
+        小时 0
+        天 7
+        周 3
+        月 1
+        年 0
+        ```
+
+注意：默认间隔为一个小时，修改需要修改定时器的配置 /usr/lib/systemd/system/snapper-backup.timer
+</code></pre><h4 id=3-发行版信息打印>3. 发行版信息打印</h4><pre><code>```
+$ paru -S neofetch
+$ neofetch
+```
+
+或者
+
+```
+$ pacman -S fastfetch lolcat
+$ fastfetch | lolcat  # 彩色输出
+```
+</code></pre><h4 id=4--使软件中心discover可用>4. * 使软件中心（Discover）可用</h4><pre><code>警告：**Arch上建议尽量不使用软件中心管理**，packagekit不兼容滚动式发行版，容易导致系统无法启动或处于一个不稳定状态。如果确实有些软件包库里没有，AUR里的也不好用，那请使用flatpak或snap安装，或者使用appimage版本（如果有）或者wine（windows程序）。
+
+```
+$ sudo pacman -S packagekit-qt6
+```
+
+安装后重启
+</code></pre><h4 id=5-任务管理器>5. 任务管理器</h4><pre><code>KDE 的原生监视器，没有要求的话可以作为默认选择。
+
+```
+$ sudo pacman -S plasma-systemmonitor  # 名称叫“系统监视器”
+```
+
+如果，想要windows那样的任务管理器，那么请安装 Mission Center。
+
+```
+# sudo pacman -S mission-center
+```
+</code></pre><h4 id=6--打印机>6. 打印机</h4><p>安装cups</p><pre tabindex=0><code>$ sudo pacman -S cups cups-pdf cups-filters
+</code></pre><p>安装相关工具</p><pre tabindex=0><code>$ sudo pacman -S print-manager system-config-printer  # KDE打印机UI管理工具
+$ sudo pacman -S ghostscript gsfont  # 处理打印格式与转换
+$ sudo pacman -S foomatic-db-engine foomatic-db foomatic-db-ppds foomatic-db-nonfree foomatic-db-nonfree-ppds  # 兼容驱动
+$ sudo pacman -S gutenprint foomatic-db-gutenprint-ppds  # 佳能(Canon)、爱普生(Epson)、利盟(Lexmark)、索尼(Sony)、奥林巴斯(Olympus)、兄弟(Brother)、惠普(HP)、理光(Ricoh)、PCL 打印机以及一些通用打印机的驱动程序
+$ sudo pacman -S hplip # 你的打印机品牌驱动，举例HP驱动
+</code></pre><p>启用cpus服务</p><pre tabindex=0><code>sudo systemctl enable --now cups.service  # cpus服务
+</code></pre><p>启用mDNS域名解析</p><pre tabindex=0><code>$ sudo pacman -S avahi nss-mdns
+$ sudo systemctl enable --now avahi-daemon.service  # 网络设备自动发现
+</code></pre><p>允许系统解析 .local 域名</p><pre tabindex=0><code>$ vim /etc/nsswitch.conf
+</code></pre><p>hosts 中加入： mdns_minimal [NOTFOUND=return]</p><pre tabindex=0><code>hosts: mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns
+</code></pre><p>在系统配置中选择“打印机”添加搜索到的打印机即可</p><h4 id=7-日历配置>7. 日历配置</h4><p>（1）在右下角始终上点击打开日历面板，点击右上角的设置图标。</p><p>（2）在打开的配置窗口中，选择“日历”，勾选可用插件：其他历法系统、天文事件、节假日，应用生效</p><p>（3）在配置窗口中，选择新增的“其他历法系统”，选择中国农历或者其他你想显示的历法系统，应用生效</p><p>（4）如果你不想显示月相只想要节气的话，可以在“天文事件”中取消其勾选，应用生效。</p><p>（5）在节假日中搜索勾选你想显示的国家或地区，应用生效</p><h4 id=8--休眠到硬盘高级>8. * 休眠到硬盘（高级）</h4><p>还没摸透怎么搞。</p><p>参考：https://wiki.archlinuxcn.org/wiki/Zswap
+参考：https://wiki.archlinuxcn.org/wiki/%E7%94%B5%E6%BA%90%E7%AE%A1%E7%90%86/%E6%8C%82%E8%B5%B7%E4%B8%8E%E4%BC%91%E7%9C%A0#%E4%BC%91%E7%9C%A0</p><p>注意：默认配置下不要使用休眠，重新启动后会导致掉盘，掉服务，无法恢复之前打开的软件等异常情况，想省电请直接关机。</p><h2 id=玩具>玩具</h2><h4 id=1-cmatrix>1. cmatrix</h4><pre><code>黑客帝国代码雨，启动后按数字键调整速度，Q键退出
+
+```
+$ sudo pacman -S cmatrix
+$ cmatrix
+$ cmatrix | lolcat
+```
+</code></pre><h2 id=常用软件>常用软件</h2><pre><code>应用程序大全： https://wiki.archlinuxcn.org/wiki/%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E5%88%97%E8%A1%A8
+应用程序/工具大全：https://wiki.archlinuxcn.org/wiki/%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E5%88%97%E8%A1%A8/%E5%B7%A5%E5%85%B7
+可替代的软件： https://alternativeto.net/
+</code></pre><h4 id=1-图片查看器>1. 图片查看器</h4><p>KDE 的图片查看器</p><pre tabindex=0><code>$ sudo pacman -S gwenview
+</code></pre><h4 id=2-视频播放器>2. 视频播放器</h4><p>安装满足大多数需求的的VLC</p><pre tabindex=0><code>$ sudo pacman -S vlc
+</code></pre><h4 id=3-代理工具>3. 代理工具</h4><pre><code>安装v2rayn，虽然UI交互比较令人费解（clash的UI也很令人费解），但是胜在稳定性强
+
+
+```
+$ paru -S v2rayn
+```
+
+警告：谨慎安装clash-verge 2.4.x 版本，截至目前2.4.3版本 clash-verge-rev 都存在致命的稳定性bug
+
+```
+$ sudo pacman -S clash-verge-rev
+```
+
+配置bash代理：
+</code></pre><pre tabindex=0><code>export http_proxy=&#34;http://127.0.0.1:10808&#34;
+export https_proxy=&#34;$http_proxy&#34;
+export all_proxy=&#34;socks5://127.0.0.1:10808&#34;
+</code></pre><p>source ~/.bashrc 生效</p><p>curl <a href=http://ifconfig.me target=_blank>http://ifconfig.me</a>
+查看是否有生效</p><h4 id=4-zen-browser可选可理解为firefox的arc版>4. zen-browser(可选，可理解为Firefox的Arc版)</h4><pre><code>```
+$ paru -S zen-browser-bin
+```
+</code></pre><h4 id=5-brave可选>5. Brave（可选）</h4><pre><code>拦截广告很厉害的chrome
+
+```
+$ paru -S brave-bin
+```
+</code></pre><h4 id=6-edge可选>6. edge（可选）</h4><pre><code>```
+$ paru -S microsoft-edge-stable-bin
+```
+
+启用wayland输入法支持
+
+```
+$ vim ~/.config/microsoft-edge-stable-flags.conf
+```
+
+```
+--ozone-platform-hint=auto
+--enable-wayland-ime
+```
+
+解释：
+
+```
+--ozone-platform-hint=auto  启用原生Wayland支持
+--enable-wayland-ime        启用Waylan输入法支持fcitx5，此标志只有在实现了text_input_v1协议的情况下才有效
+```
+
+参考: https://wiki.archlinuxcn.org/wiki/Chromium#%E5%8E%9F%E7%94%9F_Wayland_%E4%B8%8A%E8%BF%90%E8%A1%8C
+
+启用手势：
+
+linux版本在114版本后也未支持手势，所以，从Chrome插件商店安装 CrxMouse插件
+</code></pre><h4 id=7-chrome可选>7. chrome（可选）</h4><pre><code>```
+$ paru -S google-chrome
+```
+
+启用wayland输入法支持
+
+```
+$ vim ~/.config/chrome-flags.conf
+```
+
+```
+--ozone-platform-hint=auto
+--enable-wayland-ime
+```
+
+解释：
+
+```
+--ozone-platform-hint=auto  启用原生Wayland支持
+--enable-wayland-ime        启用Waylan输入法支持fcitx5，此标志只有在实现了text_input_v1协议的情况下才有效
+```
+
+参考: https://wiki.archlinuxcn.org/wiki/Chromium#%E5%8E%9F%E7%94%9F_Wayland_%E4%B8%8A%E8%BF%90%E8%A1%8C
+
+手势：
+
+从Chrome插件商店安装 CrxMouse插件
+</code></pre><h4 id=8-telegram-desktop>8. Telegram Desktop</h4><pre><code>```
+$ sudo pacman -S telegram-desktop
+```
+</code></pre><h4 id=9-计算器>9. 计算器</h4><pre><code>安装KDE的计算器
+
+```
+$ sudo pacman -S kcalc
+```
+
+或者更强大的 Qalculate
+
+```
+$ sudo pacman -S qalculate-gtk
+```
+</code></pre><h4 id=10-office>10. office</h4><pre><code>安装功能不强，但是现代UI，满足大多数普通场景的 OnlyOffice
+
+```
+$ paru -S onlyoffice-bin
+```
+</code></pre><h4 id=11-截图录屏>11. 截图、录屏</h4><pre><code>KDE自带就有，按 PrintScreen 键就可以。
+
+如果需要更加强大类似windows上Snipaste或者PixPin的，请参考：https://wiki.archlinuxcn.org/zh-sg/%E5%B1%8F%E5%B9%95%E6%8D%95%E8%8E%B7
+
+截图工具建议安装 flameshot（没有windows上体验那么好，但是在linux平台已经很好了）
+
+```
+$ sudo pacman -S flameshot
+```
+
+常用录屏工具建议安装，GIF,MP4都支持。
+
+```
+$ sudo pacman -S kooha
+```
+
+或者安装非常专业的OBS
+
+```
+$ sudo pacman -S obs-studio
+```
+</code></pre><h4 id=12-下载工具>12. 下载工具</h4><p>想要开箱即用配置简单像迅雷一样，可以安装 Motrix</p><p>注意：AUR中有两个包，一个是motrix一个是motrix-git，安装时本地编译都会出现报错：</p><pre tabindex=0><code>:: 发现的内部冲突：
+    nodejs: nodejs-lts-hydrogen (nodejs) 
+</code></pre><p>继续的话它会把nodejs 18.12.0 下下来一直在那里编它的nodejs-lts-hydrogen 一万年。</p><p>所以，推荐安装Flatpak包:</p><pre tabindex=0><code>$ flatpak install motrix
+或者
+$ flatpak install flathub net.agalwood.Motrix
+</code></pre><p>⚠️ 问题：Motrix的下载目录，建议设置在home的Download中。尽量不要设置在其他的挂载目录中，避免下载完成没有文件的问题。</p><h4 id=13-取色器>13. 取色器</h4><p>在KDE上目前没有找到好用的取色器，将就一下使用KDE自带的任务栏取色器小组件</p><h4 id=14-局域网聊天和文件传输工具>14. 局域网聊天和文件传输工具</h4><p>主要是发送文件，简单的文本、图片和剪切板发送，想要像FeiQ或者飞鸽传书一样的就安装 beebeep。</p><pre tabindex=0><code>$ sudo pacman -S beebeep
+</code></pre><h4 id=12-远程windows>12. 远程windows</h4><p>remmina 是社区最为推荐的远程工具，freerdp是windows的远程协议RDP的插件</p><pre tabindex=0><code>$ sudo pacman -S remmina freerdp
+</code></pre><h2 id=国内软件>国内软件</h2><h4 id=1-网易云音乐>1. 网易云音乐</h4><pre><code>```
+$ sudo pacman -S netease-cloud-music-gtk4 # archliunxcn
+or:
+$ paru -S netease-cloud-music-gtk4 # AUR
+```
+</code></pre><h4 id=2-腾讯会议>2. 腾讯会议</h4><pre><code>```
+$ paru -S wemeet-bin # 2025/09/12 wmeet-bin 已经支持屏幕共享，不需要再安装 wemeet-wayland-screenshare-git，已安装的请删除
+```
+</code></pre><h4 id=3-微信>3. 微信</h4><pre><code>```
+$ paru -S wechat
+```
+
+解决Emoji字体显示成框框
+
+```
+$ paru -S ttf-twemoji
+```
+
+备注：
+wechat包已经处理了输入法问题，如果直接安装原版wechat-bin,需要启用wayland输入法支持
+
+**不建议** 在系统环境中配置，如： sudo vim /etc/environment
+```
+XMODIFIERS=@im=fcitx
+```
+
+`建议` 在微信的启动方式中设置环境变量
+
+    (1) 在开始菜单中搜索wechat,找到微信应用程序项目
+    (2) 右键打开 “编辑应用程序”
+    (3) 在弹出的编辑窗口中填入环境变量（变量间用空格隔开）
+        ``` 
+        QT_IM_MODULE=fcitx SDL_IM_MODULE=fcitx GLFW_IM_MODULE=ibus
+        ```
+    (4) 重启微信即可
+</code></pre><h4 id=4-企业微信>4. 企业微信</h4><blockquote><p>暂时，ArchLinux上无法使用企业微信达到与微信相同的体验，建议手机使用，或者虚拟机使用</p></blockquote><p>wine10安装企业微信启动后基本只能聊天，窗口渲染有脏边框，不能调整窗口大小，DPI兼容有问题。
+而通过 deep-wine 安装已不可用， deep-wine8-stable 现在是一个孤儿包，没有维护，安装下载 403。</p><h2 id=kde-的使用与优化>KDE 的使用与优化</h2><pre><code>参考：https://wiki.archlinuxcn.org/wiki/KDE
+</code></pre><h4 id=1-开始菜单和logo>1. 开始菜单和logo</h4><p>任务栏右键 -> &ldquo;添加和管理挂件&rdquo; -> 点击“获取挂件” -> 搜索 Launchpad Plasma -> 安装它 -> 退出编辑回到桌面，在开始菜单按钮上右键“显示替代部件”替换默认的开始菜单。</p><p>替换后，右键开始菜单按钮，点击 “配置 Launchpad Plasma”，可以替换开始菜单图标和icon（PS: archlinux的logo在其他里）</p><h4 id=2-图标光标欢迎屏幕登陆屏幕等等>2. 图标、光标、欢迎屏幕、登陆屏幕等等</h4><p>在系统设置中选择 “颜色和主题” 就可以一站式配置这些内容，好看的样式一般都是社区网友制作的，只需要进入对应的设置项，点击右上角 “获取xxx” 寻找自己喜欢的样式安装后应用即可。</p><p>图标：Tela</p><p>登陆屏幕（SSDM）可能会报错 ‘org.kde.plasma.core’ 没有安装，需要安装 plasma-framework：</p><pre tabindex=0><code>$ sudo pacman -S plasma-framework5
+</code></pre><p>登陆屏幕（SSDM）可能会报错 &lsquo;Type Clock unavailable&rsquo; &lsquo;Type Battery unavaliable&rsquo; &lsquo;org.kde.plasma.workspace.components&rsquo; uninstalled 错误，需要安装（更新）plasma-workspace，一般都是因为这个SSDM插件是plasma5的，只有换用别的plasma6的插件。</p><blockquote><p>⚠️注意： SSDM插件很多都是plasma5的，在安装前请最好去项目主页查看一下依赖需求，避免安装后报错无法使用</p></blockquote><h4 id=3-多桌面>3. 多桌面</h4><p><code>win+w</code> 快捷键进入多桌面管理界面
+<code>ctrl+win+左右方向键</code> 快捷键切换桌面</p><p>如果不想在任务栏上显示长条的虚拟桌面提示器，可以右键任务栏进入面板设置中，右键“虚拟桌面提示器”更换成“活动提示器”或者其他。</p><h4 id=4-显示隐藏文件夹dolphin>4. 显示隐藏文件夹（Dolphin）</h4><p><code>ctrl+H</code> 快捷键切换隐藏文件夹显示，或者在资源管理器左上角的视图设置中勾选/取消勾选显示隐藏文件</p><h2 id=develop>develop</h2><h4 id=1-gcc>1. gcc</h4><pre><code>```
+$ sudo pacman -S base-devel
+```
+</code></pre><h4 id=2-python>2. python</h4><pre><code>安装python编译的依赖
+
+```
+$ sudo pacman -S base-devel # 对应build-essential
+$ sudo pacman -S gdb # 对应GUN debuger
+$ sudo pacman -S lcov
+$ sudo pacman -S pkgconf
+$ sudo pacman -S tcl
+$ sudo pacman -S tk
+```
+</code></pre><h4 id=3-vscode>3. vscode</h4><pre><code>安装微软官方版本
+
+```
+$ paru -S visual-studio-code-bin
+```
+
+注意：从菜单或桌面图表启动时，无法集成shell .bashrc 中的nodejs的配置，调试的时候会找不到node.js，调试node代码时要从bash中使用 `code .` 启动
+
+启用输入法支持
+
+```
+$ vim ~/.config/code-flags.conf
+```
+
+添加：
+
+```
+--ozone-platform-hint=auto
+--enable-wayland-ime
+```
+
+解释：
+--ozone-platform-hint=auto  启用原生Wayland支持
+--enable-wayland-ime        启用Waylan输入法支持fcitx5，此标志只有在实现了text_input_v1协议的情况下才有效
+
+注意：
+虽然启动的时候会打印错误说没有相应的特性，但是没有关系不影响使用。
+
+如果，配置后还是未生效，那么可以切换虚拟键盘到 fcitx5 Wayland。（PS：还可以尝试切回来就可能会自己好了）
+</code></pre><h4 id=4-pyenv>4. pyenv</h4><pre><code>注意：archlinux 系统包含python，一定要配置pyenv到bash中，且一定要先安装python的编译环境，不然会出现各种错误
+
+```
+$ sudo pacman -S pyenv
+```
+
+加入bash的启动文件中
+
+```
+$ vim ~/.bashrc
+```
+
+加入：
+
+```
+# Set up Python Version Manager
+export PYENV_ROOT=&quot;$HOME/.pyenv&quot;
+[[ -d $PYENV_ROOT/bin ]] &amp;&amp; export PATH=&quot;$PYENV_ROOT/bin:$PATH&quot;
+eval &quot;$(pyenv init - bash)&quot;
+```
+
+更新：
+
+```
+$ source ~/.bashrc  # 不行的话请重启terminal
+```
+</code></pre><h4 id=5-nvm>5. nvm</h4><pre><code>```
+$ paru -S nvm
+```
+
+编辑bash的启动文件中
+
+```
+$ vim ~/.bashrc
+```
+
+加入：
+
+```
+# 重载环境变量
+source /usr/share/nvm/init-nvm.sh
+```
+</code></pre><h2 id=专业软件>专业软件</h2><h4 id=1-lunacy>1. lunacy</h4><pre><code>一个很好用的免费设计软件
+
+```
+$ paru -S lunacy-bin
+```
+
+支持输入法：
+
+    `建议` 在程序的启动方式中设置环境变量
+
+    (1) 在开始菜单中搜索lunacy,找到微信应用程序项目
+    (2) 右键打开 “编辑应用程序”
+    (3) 在弹出的编辑窗口中填入环境变量（变量间用空格隔开）
+        ``` 
+        QT_IM_MODULE=fcitx
+        ```
+    (4) 重启程序即可
+    
+    由于lunacy对于输入法的预编辑文本不支持，所以需要在输入法的全局设置中关闭 “在程序中显示预编辑文本” 选项。
+</code></pre><h4 id=2-codemter-runtime>2. codemter runtime</h4><pre><code>这里安装7.51版本，需要使用到 PDKBUILD 自行编译安装包
+
+```
+$ git clone https://github.com/orange-pig/custom-aur
+```
+
+将codemeter-lite_7.51xxx.deb 文件放入 codemeter-runtime 中
+
+```
+$ cd codemeter-runtime
+$ makepkg -s
+```
+
+将会在当前目录下生成 codemeter-runtime-7.51xxx.pkg.tar.zst 包
+
+安装：
+
+```
+$ sudo pacman -U codemeter-runtime-7.51xxx.pkg.tar.zst
+```
+
+安装好后 cli 工具 cmu 就可以使用了。
+
+使用命令查看服务状态：
+
+```
+$ systemctl status codemeter
+```
+
+默认应该还未启动，需要启动一下codemeter的服务
+
+```
+$ systemctl start codemeter
+```
+
+设置开机自启动
+
+```
+$ sysemctl enable codemeter
+```
+
+这个时候就可以使用codemeter了，常用命令如下：
+
+```
+$ cmu -i -f [license文件路径]                                 # 导入授权
+$ cmu --delete-cmact-license --serial [license序列号]         # 删除授权
+$ cmu --list-content                                         # 查看授权
+$ cmu --add-server [server address]                          # 添加服务器
+$ cmu --delete-server [server address]                       # 移除服务器
+$ cmu --list-server                                          # 查看当前连接的服务器
+$ cmu --list-network --server [server address]               # 查询服务器
+```
+</code></pre><h4 id=3-klayout>3. klayout</h4><p>通过这条命令下载源码本地编译klayout。（要编译qt源码，单线程编译时间可能会要很久）</p><pre tabindex=0><code>$ paru -S klayout-qt6
+</code></pre><h4 id=4-画图工具>4. 画图工具</h4><p>安装亿图图示（原版为edraw-max）</p><pre tabindex=0><code>$ paru -S edrawmax-cn
+</code></pre><h4 id=5--kvm虚拟机>5. KVM虚拟机</h4><p><strong>方案一：社区推荐最佳</strong></p><p>KVM + QEMU + libvirt/virt-manager。
+qemu-full
+virt-manager
+swtpm</p><p><strong>方案二：与windows一致方便使用</strong></p><p>安装 vmware workstation</p><pre tabindex=0><code>$ paru -S vmware-workstation
+</code></pre><p>运行 lsmod | grep vmmon 查看虚拟机监视器模块有没有加载，如果返回空，则可以通过安装 linux-headers （如果没有安装的话），安装后重启解决。</p><pre tabindex=0><code>$ sudo pacman -Syu
+$ sudo pacman -S linux linux-headers
+</code></pre><p>运行 lsmod | grep vmmnet 查看虚拟机网络模块有没有加载，如果返回空，则可以通过启动虚拟机的网络服务解决。</p><pre tabindex=0><code>$ sudo systemctl enable --now vmware-networks.service
+</code></pre><h2 id=游戏>游戏</h2><p>steam
+lutris</p><h2 id=appimage>AppImage</h2><p>appimagelauncher appiamge程序的管理器</p><p><a href=https://www.heylyle.com/posts/software-or-services-i-used-in-2024/ target=_blank>https://www.heylyle.com/posts/software-or-services-i-used-in-2024/</a></p><h2 id=linux常用操作>linux常用操作</h2><h4 id=网络问题分析>网络问题分析</h4><p><strong>IP工具（自带）</strong></p><p>查看所有网卡ip（包括虚拟网卡）</p><pre tabindex=0><code>$ ip a
+</code></pre><p>查看所有路由器</p><pre tabindex=0><code>$ ip route
+</code></pre><p>安装网络工具 talenet Firewalk fireshark traceroute tracepath tcpdump mtr</p><pre tabindex=0><code>$ ping -c [address]
+$ tracepath [address]
+</code></pre><p>DNS配置文件 /etc/resolv.conf</p><h4 id=ssh-配置>ssh 配置</h4><p>生成ssh，采用又短又快的 ed25519。</p><pre tabindex=0><code># 生成（会提示输入 passphrase）
+$ ssh-keygen -t ed25519 -a 100 -C &#34;your_email@example.com&#34; -f ~/.ssh/id_ed25519_gitlab
+</code></pre><p>打印公钥内容，复制添加到gitlab</p><pre tabindex=0><code>$ cat ~/.ssh/id_ed25519_gitlab.pub
+</code></pre><p>把主机指纹加入 known_host：</p><pre tabindex=0><code>$ ssh-keyscan -H gitlab.example.com &gt;&gt; ~/.ssh/known_hosts
+</code></pre><p>指定Host使用密钥：</p><pre tabindex=0><code>$ vim ~/.ssh/config 
+</code></pre><p>加入:</p><pre tabindex=0><code>Host gitlab.example.com            # ssh使用时的主机名称，可以设定为别名，但在使用时注意URL中需要用别名
+    HostName gitlab.example.com    # 替换为你的域名或 IP
+    User git
+    IdentityFile ~/.ssh/id_ed25519_gitlab
+    IdentitiesOnly yes
+    AddKeysToAgent yes
+</code></pre><p>加入 agent：</p><pre tabindex=0><code>$ vim ~/.bash_profile
+</code></pre><p>放入下面行:</p><pre tabindex=0><code># 启动 agent
+eval &#34;$(ssh-agent -s)&#34;
+</code></pre><p>添加私钥：</p><pre tabindex=0><code>（会提示输入 passphrase）
+ssh-add ~/.ssh/id_ed25519_gitlab
+</code></pre><p>测试：</p><pre tabindex=0><code>ssh-add -l                          # 列出 agent 中的 key
+ssh -T gitlab.example.com           # 如果设置的别名，请用别名
+</code></pre><h4 id=vmware-workstation-安装macos的虚拟机>vmware workstation 安装macos的虚拟机</h4><p>破解vmware支持MacOS虚拟机</p><p>下载 unlocker 最新版解压执行 unlock 破解。</p><p>注意：虽然unlocker仓库已经存档，但是vmware的代码基本没动过，所以版本16和17都是支持的。</p><p><a href=https://github.com/DrDonk/unlocker target=_blank>https://github.com/DrDonk/unlocker</a></p><p>下载MacOS镜像</p><p><a href=https://github.com/Pyenb/macOS-ISOs target=_blank>https://github.com/Pyenb/macOS-ISOs</a></p><p>创建虚拟机后，先不忙启动，修改虚拟机目录下的<code>.vmx</code>文件，在最后加入欺骗信息：</p><blockquote><p>虚拟机配置建议为 CPU: 1 * N （N取决你你的电脑的一半线程数，可以设置高一些不要超过主机的80%） 内存：6-16G （取决与你有多少空闲内存，也是不建议超过80%）</p></blockquote><pre tabindex=0><code>smc.version = &#34;0&#34;
+smbios.reflectHost = &#34;TRUE&#34;
+hw.model = &#34;MacBookPro14,3&#34;
+board-id = &#34;Mac-551B86E5744E2388&#34;
+</code></pre><p>然后，加载镜像进入macos的安装环境。第一步是分区，不要选择安装。</p><p>打开磁盘工具，选择虚拟机的硬盘（注意在内置中有磁盘也有ISO镜像，注意辨别），点击Erase（格式化），设置一个名称如 “macos”，格式：APFS，分区图：GUID。</p><p>完成后，退出磁盘工具点击安装 macOS。</p><p>安装macOS后，关机将CD设置为自动检测，避免下次启动又加载系统镜像。</p><p>重启后，选择 “VM” -> &ldquo;Install VMWare Tools&rdquo; 在系统中点击安装，根据安装向导提示各种允许即可，安装后重启就可用了。</p><p>⚠️ 如果主机的配置不是很高，没有独立显卡的情况下，建议将虚拟机的Dispaly设置中的分辨率手动指定为 1920*1080，不然画面会很卡。进入系统后请设置为暗色模式，不要设置壁纸。</p><p>如果使用的桥接模式，虚拟机也会分配到一个局域网IP，需要配置代理的话与打开设置搜索代理进行配置。配置zsh的代理的如下：</p><pre tabindex=0><code>$ vim ~/.zshrc
+
+加入：
+export http_proxy=&#34;http://代理服务器地址:端口&#34;
+export https_proxy=&#34;http://代理服务器地址:端口&#34;
+export no_proxy=&#34;localhost,127.0.0.1,::1&#34;  # 跳过本地地址的代理
+
+生效：
+$ source ~/.zshrc
+</code></pre><p>新手安装需要先安装 <a href=https://brew.sh target=_blank>Homebrew</a>
+包管理工具, 使用 brew install [包名] 安装包。</p><p>先安装 xcode 工具集</p><pre tabindex=0><code>xcode-select --install
+</code></pre><p>安装 pyenv，一定要开代理，不然下不动</p><pre tabindex=0><code>$ brew install pyenv
+
+$ vim ~/.zshrc
+
+加入：
+
+# 加入 pyenv 到 PATH
+export PATH=&#34;$HOME/.pyenv/bin:$PATH&#34;
+# 初始化 pyenv（生成 shims 目录并管理 PATH）
+eval &#34;$(pyenv init -)&#34;
+# 可选：如果使用 pyenv-virtualenv，需要这行
+eval &#34;$(pyenv virtualenv-init -)&#34;
+
+重启终端生效
+</code></pre><p>安装 rustup 跟随官网教程即可。</p></section></article></div><div x-data=tocHighlighter() @scroll.window=debouncedScroll class="hidden lg:flex lg:flex-col lg:items-end"></div></div><footer class="flex justify-between items-center gap-2 px-4 py-12"><div><p>© 2025 若烟阁</p><p class=text-sm>🌱
+<span class=text-base-content/60>Powered by <a class=hover:underline href=https://gohugo.io/ target=_blank>Hugo</a> with theme
+<a class=hover:underline href=https://github.com/g1eny0ung/hugo-theme-dream target=_blank>Dream</a>.</span></p></div><div x-data="{ icons: [
+    { name: 'sunny', status: 'n' },
+    { name: 'moon', status: 'y' },
+    { name: 'desktop', status: 'auto' }
+  ] }" class="flex items-center gap-2 h-[32px] px-2 bg-base-100 border border-base-content/30 rounded-full"><template x-for="icon in icons"><div role=button tabindex=0 :aria-label="'Select ' + icon.name + ' mode'" class="group inline-flex justify-center items-center p-1 rounded-full cursor-pointer hover:bg-primary" :class="$store.darkMode.icon() === icon.name && 'bg-primary'" @click=$store.darkMode.toggle(icon.status)><ion-icon :name="`${icon.name}-outline`" class=group-hover:text-primary-content :class="$store.darkMode.icon() === icon.name && 'text-primary-content'"></ion-icon></div></template></div></footer></div></div><div class=back><div class=container><div class="dream-grid dream-grid-about"><div class="w-full md:w-1/2 lg:w-1/3 xl:w-1/4 p-4 dream-column"><article class="card bg-base-100 hover:bg-base-content/10 shadow-xl dark:border dark:border-base-content/30"><div class=card-body><div class=card-title>关于我</div><div class="prose dark:prose-invert"><p>这里是鱼人小野的个人博客！</p></div></div></article></div><div class="w-full md:w-1/2 lg:w-1/3 xl:w-1/4 p-4 dream-column"><article class="card bg-base-100 hover:bg-base-content/10 shadow-xl dark:border dark:border-base-content/30"><div class=card-body><div class=card-title>为什么要自己搭建博客</div><div class="prose dark:prose-invert"><p>在学习的道路上，有很多所思所想所悟，有很多经验希望得到总结。所以，陆陆续续的用过wordpress，CSDN，开源中国，简书，掘金等博客平台，最后还是回到了原点重新装修以前觉得简陋的github.io（这得感谢社区的人们的付出）。</p><p>在这个过程中愈发的体会到，自己搭博客的好处。就是没有讳莫如深的审核，也不用看人脸色，更不用担心自己辛苦写的博客再修订一下后没了。（当然，也就没有流量推荐，不过反正都是写给自己看的，能对其他朋友有点帮助那当然更好了</p></div></div></article></div></div><footer class="flex justify-between items-center gap-2 px-4 py-12"><div><p>© 2025 若烟阁</p><p class=text-sm>🌱
+<span class=text-base-content/60>Powered by <a class=hover:underline href=https://gohugo.io/ target=_blank>Hugo</a> with theme
+<a class=hover:underline href=https://github.com/g1eny0ung/hugo-theme-dream target=_blank>Dream</a>.</span></p></div><div x-data="{ icons: [
+    { name: 'sunny', status: 'n' },
+    { name: 'moon', status: 'y' },
+    { name: 'desktop', status: 'auto' }
+  ] }" class="flex items-center gap-2 h-[32px] px-2 bg-base-100 border border-base-content/30 rounded-full"><template x-for="icon in icons"><div role=button tabindex=0 :aria-label="'Select ' + icon.name + ' mode'" class="group inline-flex justify-center items-center p-1 rounded-full cursor-pointer hover:bg-primary" :class="$store.darkMode.icon() === icon.name && 'bg-primary'" @click=$store.darkMode.toggle(icon.status)><ion-icon :name="`${icon.name}-outline`" class=group-hover:text-primary-content :class="$store.darkMode.icon() === icon.name && 'text-primary-content'"></ion-icon></div></template></div></footer></div></div></div></div><script>window.lightTheme="emerald",window.darkTheme="forest"</script><script src=https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin=anonymous></script><script src=https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin=anonymous></script><script src=/blog/js/grid.min.js></script><script src=/blog/js/main.min.js></script><script src=/blog/js/toc.min.js></script><script type=module src=https://cdn.jsdelivr.net/npm/ionicons@7.4.0/dist/ionicons/ionicons.esm.js integrity="sha256-/IFmi82bIhdYWctu0UddSlJqpnzWm7Vh2C4CM32wF/k=" crossorigin=anonymous></script><script nomodule src=https://cdn.jsdelivr.net/npm/ionicons@7.4.0/dist/ionicons/ionicons.js integrity="sha256-mr7eJMX3VC3F7G32mk4oWp1C6a2tlMYxUdptfT7uKI8=" crossorigin=anonymous></script></body></html>
